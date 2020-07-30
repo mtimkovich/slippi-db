@@ -1,0 +1,15 @@
+{
+  "name": "slippi-cumulative-stats",
+  "version": "1.0.0",
+  "description": "A script using slippi-js to calculate overall win rate, character win rates, and play time from replays.",
+  "main": "get_stats.js",
+  "scripts": {
+    "test": "node get_stats.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@slippi/slippi-js": "^5.0.3",
+    "glob": "^7.1.6"
+  }
+}
