@@ -99,14 +99,16 @@ for (i = 0; i < files.length; i++) {
     end_lower_percent = (player_kills == opponent_kills) && player_final_percent < opponent_final_percent
     try {
         end_opponent_LRAS = (game.getGameEnd().lrasInitiatorIndex == opponent_num)
+        end_player_LRAS = (game.getGameEnd.lrasInitiatorIndex == player_num)
     }
     catch {
         end_opponent_LRAS = false
+        end_player_LRAS = false
     } 
 
     // Every death is considered the opponent's kill
-    // If the player has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
-    if (end_more_kills || end_lower_percent || end_opponent_LRAS) {
+    // If the player didn't quit out AND has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
+    if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
         console.log(`${i}: ${player_names[player_num] || player_codes[player_num]} (${player_character}) beat ${player_names[opponent_num] || player_codes[opponent_num]} (${opponent_character}) in ${game_length}!`)
         total_wins++
         total_games++
@@ -139,6 +141,7 @@ for (i in character_totals) {
     character_results[i] = `| ${characters[i]}: ${wins} wins in ${games} games (${winrate}% win rate).`
 }
 
+// Displaying results in tier list order
 for (i = 0; i < character_totals.length; i++) {
     if (character_results[tier_list[i]]) {
         console.log(character_results[tier_list[i]])
