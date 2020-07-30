@@ -134,12 +134,19 @@ for (i = 0; i < files.length; i++) {
         total_games++
         character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
     }
-    final_player_name = player_names[player_num]
+
+    // Try to find last used nickname and actual connect code to display at the end
+    if (player_names[player_num].length > 0) {
+        final_player_name = player_names[player_num]
+    }
     real_player_code = player_codes[player_num]
     if (opponent_arg && player_names[opponent_num]) {
-        final_opponent_name = player_names[opponent_num]
+        if (player_names[opponent_num].length > 0) {
+            final_opponent_name = player_names[opponent_num]
+        }
         real_opponent_code = player_codes[opponent_num]
     }
+
     counted_seconds += game_seconds
 }
 
