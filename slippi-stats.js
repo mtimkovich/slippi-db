@@ -52,11 +52,11 @@ for (i = 0; i < files.length; i++) {
         total_seconds += game_seconds
     }
     catch(err) {
-        console.log(`${i}: Error reading replay data. Ignoring results...`)
+        console.log(`${i}: Error reading replay data (${files[i]}). Ignoring results...`)
         continue
     }
     if (settings.players.length !== 2) {
-        console.log(`${i}: More than 2 players. Ignoring results...`)
+        console.log(`${i}: More than 2 players (${files[i]}). Ignoring results...`)
         continue
       }
     if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
