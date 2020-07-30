@@ -1,21 +1,21 @@
 # Slippi Cumulative Stats
 
-A script using [slippi-js](https://github.com/project-slippi/slippi-js) to calculate your overall play time and win rates from replays. No guarantees.
+A script using [slippi-js](https://github.com/project-slippi/slippi-js) to calculate your overall or head to head play time and win rates from replays. No guarantees.
 
 ## Usage
 Requires Node.js.
 
 1. Place slippi-stats.js and package.json in a folder with replays. (It also checks subfolders)
 2. Open a command line in the directory and run `npm install`
-3. Run `node slippi-stats.js <nickname/connect code>`. (Connect code may be more reliable)
+3. Run `node slippi-stats.js <nickname/code> [opponent nickname/code]`. (Connect codes may be more reliable)
 
 Note: Replays are by default saved in `Documents/Slippi` but replays created before Jun 30, 2020 may be in your Dolphin folder.
 
 ## Example
 
-``node slippi-stats.js zimp#721``
+``node slippi-stats.js zimp#721 bullets``
 
-![Example results](https://i.imgur.com/4se33oG.png)
+![Example results](https://i.imgur.com/S4cYiGq.png)
 
 ## Win conditions
 * You finished with more stocks than your opponent

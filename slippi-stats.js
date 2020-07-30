@@ -13,13 +13,17 @@ tier_list = [2, 20, 9, 19, 15, 12, 14, 0, 13, 16, 22, 17, 7, 25, 8, 21, 1, 6, 3,
 
 if (process.argv.length == 2) {
     console.log('| Provides cumulative stats from Slippi replays')
-    console.log('| USAGE: node slippi-stats.js <nickname/code>')
-    console.log('| Script checks current folder and subfolders')
-    console.log('| Note: Replays with no player data (e.g. replays made before Slippi 2.1.0) count toward playtime but not win rates')
+    console.log('| USAGE: node slippi-stats.js <nickname/code> [opponent nickname/code]')
+    console.log("| Script checks current folder and subfolders. Include opponent's info if you want head to head stats")
+    console.log('| Note: Replays with no player data (e.g. replays made before Slippi 2.1.0) are skipped (but counted in overall playtime')
     process.exit()
 }
 
 const user_player = process.argv[2].toLowerCase()
+const opponent_arg = process.argv[3] || false
+if (opponent_arg) {
+    opponent_player = opponent_arg.toLowerCase()
+}
 const files = glob.sync("**/*.slp");
 
 if (files.length == 0) {
@@ -30,6 +34,7 @@ if (files.length == 0) {
 var total_games = 0
 var total_wins = 0
 var total_seconds = 0
+var counted_seconds = 0
 var character_totals = []
 var character_wins = [] 
 
@@ -59,12 +64,18 @@ for (i = 0; i < files.length; i++) {
 
     player_num = 'none'
     opponent_num = 'none'
+    opponent_found = false
     player_names = [metadata.players[0].names.netplay, metadata.players[1].names.netplay]
     player_codes = [metadata.players[0].names.code, metadata.players[1].names.code]
     player_characters = [settings.players[0].characterId, settings.players[1].characterId]
 
 
     for (j = 0; j < settings.players.length; j++) {
+        if (opponent_arg) {
+            if (player_names[j].toLowerCase() == opponent_player || player_codes[j].toLowerCase() == opponent_player) {
+                opponent_found = true
+            }
+        }
         if (player_names[j].toLowerCase() == user_player || player_codes[j].toLowerCase() == user_player) {
             player_num = j
         }
@@ -74,7 +85,10 @@ for (i = 0; i < files.length; i++) {
     }
     if (player_num == 'none') {
         console.log(`${i}: User ${user_player} not found in replay. Skipping...`)
-        console.log(metadata.players[0].names.code)
+        continue
+    }
+    if (opponent_arg && !opponent_found) {
+        console.log(`${i}: User ${opponent_player} not found in replay. Ignoring results...`)
         continue
     }
     const stats = game.getStats()
@@ -120,25 +134,37 @@ for (i = 0; i < files.length; i++) {
         total_games++
         character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
     }
+    final_player_name = player_names[player_num]
+    real_player_code = player_codes[player_num]
+    if (opponent_arg && player_names[opponent_num]) {
+        final_opponent_name = player_names[opponent_num]
+        real_opponent_code = player_codes[opponent_num]
+    }
+    counted_seconds += game_seconds
 }
 
 win_rate = (total_wins / total_games * 100).toFixed(2)
 character_results = {}
 
-var measuredTime = new Date(null)
-measuredTime.setSeconds(total_seconds)
-var total_time = measuredTime.toISOString().substr(11, 8)
+function secondsToHMS(seconds) {
+    var measuredTime = new Date(null)
+    measuredTime.setSeconds(seconds)
+    time_string = measuredTime.toISOString().substr(11, 8)
+    return time_string
+}
+
 
 console.log('----------- RESULTS -----------')
-console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate).`)
-console.log(`| ${total_time} spent in game (including skipped replays).`)
+opponent_arg ? console.log(`| ${final_player_name} (${real_player_code}) vs ${final_opponent_name} (${real_opponent_code})`) : console.log(`| ${final_player_name} (${real_player_code})`)
+console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
+console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} total time spent in matches (including skipped replays)`)
 console.log('------ CHARACTER RESULTS ------')
 
 for (i in character_totals) {
     wins = character_wins[i] || 0
     games = character_totals[i]
     winrate = ((wins / games) * 100).toFixed(2) || 0
-    character_results[i] = `| ${characters[i]}: ${wins} wins in ${games} games (${winrate}% win rate).`
+    character_results[i] = `| ${characters[i]}: ${wins} wins in ${games} games (${winrate}% win rate)`
 }
 
 // Displaying results in tier list order
