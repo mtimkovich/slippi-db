@@ -153,8 +153,12 @@ for (i = 0; i < files.length; i++) {
         }
         real_opponent_code = player_codes[opponent_num]
     }
-
     counted_seconds += game_seconds
+}
+
+if (!total_games) {
+    opponent_arg ? console.log(`No matches found for ${user_player} vs ${opponent_arg}.`) : console.log(`No matches found for ${user_player}.`)
+    process.exit()
 }
 
 win_rate = (total_wins / total_games * 100).toFixed(2)
@@ -168,8 +172,7 @@ function secondsToHMS(seconds) {
     return time_string
 }
 
-
-console.log('------- OVERALL RESULTS -------')
+console.log('\n------- OVERALL RESULTS -------')
 opponent_arg ? console.log(`| ${final_player_name} (${real_player_code}) vs ${final_opponent_name} (${real_opponent_code})`) : console.log(`| ${final_player_name} (${real_player_code})`)
 console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
 console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} total time spent in matches (including skipped replays)`)
@@ -200,4 +203,3 @@ for (i in nickname_totals) {
 }
 
 console.log('-------------------------------')
-

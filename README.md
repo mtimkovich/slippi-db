@@ -15,7 +15,7 @@ Note: Replays are by default saved in `Documents/Slippi` but replays created bef
 
 ``node slippi-stats.js zimp#721 bullets``
 
-![Example results](https://i.imgur.com/mJvdNQZ.png)
+![Example results](https://i.imgur.com/ET0bsZ3.png)
 
 ## Win conditions
 * You finished with more stocks than your opponent
