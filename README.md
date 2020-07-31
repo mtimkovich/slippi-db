@@ -7,13 +7,13 @@ Instructions for Windows.
 
 1. Place the executable from the Releases tab into a folder with replays. (It also checks subfolders)
 2. Open a command line in the directory. (Shift + Right-click in the folder and click Open Powershell Window here)
-3. Run `.\slippi-stats-win.exe <nickname/code> [opponent nickname/code]`. (Connect codes may be more reliable)
+3. Run `.\slippi-cumulative-stats-win.exe <nickname/code> [opponent nickname/code]`. (Connect codes may be more reliable)
 
 Note: Replays are by default saved in `Documents/Slippi` but replays created before Jun 30, 2020 may be in your Dolphin folder.
 
 ## Example
 
-``.\slippi-stats-win.exe zimp#721 bullets``
+``.\slippi-cumulative-stats-win.exe zimp#721 bullets``
 
 ![Example results](https://i.imgur.com/ET0bsZ3.png)
 
