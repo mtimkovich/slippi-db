@@ -211,26 +211,27 @@ for (i in nickname_totals) {
     console.log(`| ${i}: ${wins} wins in ${games} games (${winrate}% win rate)`)
 }
 
-console.log('-------- TOP OPPONENTS --------')
-opponent_results = []
-// Calculate opponent win rates
-for (i in opponent_totals) {
-    wins = opponent_wins[i] || 0
-    games = opponent_totals[i]
-    winrate = ((wins / games) * 100).toFixed(2) || 0
-    opponent_results.push({code: i, wins: wins || 0, games: games})
+if (!opponent_arg) {
+    console.log('-------- TOP OPPONENTS --------')
+    opponent_results = []
+    // Calculate opponent win rates
+    for (i in opponent_totals) {
+        wins = opponent_wins[i] || 0
+        games = opponent_totals[i]
+        winrate = ((wins / games) * 100).toFixed(2) || 0
+        opponent_results.push({code: i, wins: wins || 0, games: games})
+    }
+
+    // Sort opponents results list by games played in descending order
+    opponent_results.sort(function(a, b) {
+        return b.games - a.games
+    })
+
+    // Display opponent results (up to 10)
+    opponent_results.slice(0,9)
+    for (i = 0; i < opponent_results.length; i++) {
+        winrate = ((opponent_results[i].wins / opponent_results[i].games) * 100).toFixed(2) || 0
+        console.log(`| ${opponent_results[i].code}: ${opponent_results[i].wins} wins in ${opponent_results[i].games} games (${winrate}% win rate)`)
+    }
 }
-
-// Sort opponents results list by games played in descending order
-opponent_results.sort(function(a, b) {
-    return b.games - a.games
-})
-
-// Display opponent results (up to 10)
-opponent_results.slice(0,9)
-for (i = 0; i < opponent_results.length; i++) {
-    winrate = ((opponent_results[i].wins / opponent_results[i].games) * 100).toFixed(2) || 0
-    console.log(`| ${opponent_results[i].code}: ${opponent_results[i].wins} wins in ${opponent_results[i].games} games (${winrate}% win rate)`)
-}
-
 console.log('-------------------------------')
