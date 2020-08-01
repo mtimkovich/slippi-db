@@ -39,6 +39,8 @@ var character_totals = []
 var character_wins = [] 
 var nickname_totals = []
 var nickname_wins = []
+var opponent_totals = []
+var opponent_wins = []
 
 console.log(`${files.length} replays found.`)
 
@@ -102,6 +104,7 @@ for (i = 0; i < files.length; i++) {
     opponent_character_num = player_characters[opponent_num]
     opponent_character = characters[opponent_character_num]
     opponent_name = player_names[opponent_num]
+    opponent_code = player_codes[opponent_num]
 
     player_kills = stats.overall[player_num].killCount
     opponent_kills = stats.overall[opponent_num].killCount
@@ -128,18 +131,21 @@ for (i = 0; i < files.length; i++) {
     // Every death is considered the opponent's kill
     // If the player didn't quit out AND has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
     if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
-        console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || player_codes[opponent_num]} (${opponent_character}) in ${game_length}!`)
+        console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}!`)
         total_wins++
         total_games++
         character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
         character_wins[player_character_num] = (character_wins[player_character_num] + 1) || 1
         nickname_totals[player_name] = (nickname_totals[player_name] + 1) || 1
         nickname_wins[player_name] = (nickname_wins[player_name] + 1) || 1
+        opponent_totals[opponent_code] = (opponent_totals[opponent_code] + 1) || 1
+        opponent_wins[opponent_code] = (opponent_wins[opponent_code] + 1) || 1
+
     } else {
-        console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || player_codes[opponent_num]} (${opponent_character}) in ${game_length}.`)
+        console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}.`)
         total_games++
         character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
-        nickname_totals[player_name] = (nickname_totals[player_name] + 1) || 1
+        opponent_totals[opponent_code] = (opponent_totals[opponent_code] + 1) || 1
     }
 
     // Try to find last used nickname and actual connect code to display at the end
@@ -162,8 +168,6 @@ if (!total_games) {
 }
 
 win_rate = (total_wins / total_games * 100).toFixed(2)
-character_results = []
-nickname_results = {}
 
 function secondsToHMS(seconds) {
     var measuredTime = new Date(null)
@@ -176,8 +180,9 @@ console.log('\n------- OVERALL RESULTS -------')
 opponent_arg ? console.log(`| ${final_player_name} (${real_player_code}) vs ${final_opponent_name} (${real_opponent_code})`) : console.log(`| ${final_player_name} (${real_player_code})`)
 console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
 console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} total time spent in matches (including skipped replays)`)
-console.log('------ CHARACTER RESULTS ------')
 
+console.log('------ CHARACTER RESULTS ------')
+character_results = []
 // Calculate character win rates
 for (i in character_totals) {
     wins = character_wins[i] || 0
@@ -191,20 +196,41 @@ character_results.sort(function(a, b) {
     return b.games - a.games
 })
 
-// Display character
+// Display character results
 for (i = 0; i < character_results.length; i++) {
     winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
     console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}% win rate)`)
 }
 
 console.log('------ NICKNAME RESULTS -------')
-
 // Calculate and display nickname win rates
 for (i in nickname_totals) {
     wins = nickname_wins[i] || 0
     games = nickname_totals[i]
     winrate = ((wins / games) * 100).toFixed(2) || 0
     console.log(`| ${i}: ${wins} wins in ${games} games (${winrate}% win rate)`)
+}
+
+console.log('-------- TOP OPPONENTS --------')
+opponent_results = []
+// Calculate opponent win rates
+for (i in opponent_totals) {
+    wins = opponent_wins[i] || 0
+    games = opponent_totals[i]
+    winrate = ((wins / games) * 100).toFixed(2) || 0
+    opponent_results.push({code: i, wins: wins || 0, games: games})
+}
+
+// Sort opponents results list by games played in descending order
+opponent_results.sort(function(a, b) {
+    return b.games - a.games
+})
+
+// Display opponent results (up to 10)
+opponent_results.slice(0,9)
+for (i = 0; i < opponent_results.length; i++) {
+    winrate = ((opponent_results[i].wins / opponent_results[i].games) * 100).toFixed(2) || 0
+    console.log(`| ${opponent_results[i].code}: ${opponent_results[i].wins} wins in ${opponent_results[i].games} games (${winrate}% win rate)`)
 }
 
 console.log('-------------------------------')
