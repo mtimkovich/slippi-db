@@ -6,11 +6,9 @@ var characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'K
             'Link', 'Luigi', 'Mario', 'Marth', 'Mewtwo', 'Ness', 'Peach', 'Pikachu',
             'Ice Climbers', 'Jigglypuff', 'Samus', 'Yoshi', 'Zelda', 'Sheik', 'Falco',
             'Young Link', 'Dr. Mario', 'Roy', 'Pichu', 'Ganondorf']
-
-// 2015 melee tier list using IDs
-tier_list = [2, 20, 9, 19, 15, 12, 14, 0, 13, 16, 22, 17, 7, 25, 8, 21, 1, 6, 3, 23, 10, 18, 11, 24, 5, 4]
             
 
+// If no parameters used, provide usage information
 if (process.argv.length == 2) {
     console.log('| Provides cumulative stats from Slippi replays')
     console.log('| USAGE: node slippi-stats.js <nickname/code> [opponent nickname/code]')
@@ -21,9 +19,11 @@ if (process.argv.length == 2) {
 
 const user_player = process.argv[2].toLowerCase()
 const opponent_arg = process.argv[3] || false
+
 if (opponent_arg) {
     opponent_player = opponent_arg.toLowerCase()
 }
+
 const files = glob.sync("**/*.slp");
 
 if (files.length == 0) {
@@ -52,7 +52,7 @@ for (i = 0; i < files.length; i++) {
         total_seconds += game_seconds
     }
     catch(err) {
-        console.log(`${i}: Error reading replay data (${files[i]}). Ignoring results...`)
+        console.log(`${i}: Error reading replay metadata (${files[i]}). Ignoring results...`)
         continue
     }
     if (settings.players.length !== 2) {
@@ -60,7 +60,7 @@ for (i = 0; i < files.length; i++) {
         continue
       }
     if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
-        console.log(`${i}: Replay ${files[i]} is outdated, offline, or against a CPU (missing names). Ignoring results...`)
+        console.log(`${i}: Replay ${files[i]} is outdated or offline. (Missing names) Ignoring results...`)
         continue
     }
 
@@ -86,7 +86,7 @@ for (i = 0; i < files.length; i++) {
         }
     }
     if (player_num == 'none') {
-        console.log(`${i}: User ${user_player} not found in replay. Skipping...`)
+        console.log(`${i}: User ${user_player} not found in replay. Ignoring results...`)
         continue
     }
     if (opponent_arg && !opponent_found) {
@@ -162,7 +162,7 @@ if (!total_games) {
 }
 
 win_rate = (total_wins / total_games * 100).toFixed(2)
-character_results = {}
+character_results = []
 nickname_results = {}
 
 function secondsToHMS(seconds) {
@@ -183,15 +183,20 @@ for (i in character_totals) {
     wins = character_wins[i] || 0
     games = character_totals[i]
     winrate = ((wins / games) * 100).toFixed(2) || 0
-    character_results[i] = `| ${characters[i]}: ${wins} wins in ${games} games (${winrate}% win rate)`
+    character_results.push({character: characters[i], wins: wins || 0, games: games})
 }
 
-// Display character results in tier list order
-for (i = 0; i < character_totals.length; i++) {
-    if (character_results[tier_list[i]]) {
-        console.log(character_results[tier_list[i]])
-    }
+// Sort character results list by games played in descending order
+character_results.sort(function(a, b) {
+    return b.games - a.games
+})
+
+// Display character
+for (i = 0; i < character_results.length; i++) {
+    winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
+    console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}% win rate)`)
 }
+
 console.log('------ NICKNAME RESULTS -------')
 
 // Calculate and display nickname win rates
