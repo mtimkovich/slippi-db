@@ -229,10 +229,10 @@ if (!opponent_arg) {
     })
 
     // Display opponent results (up to 10)
-    opponent_results.slice(0,9)
-    for (i = 0; i < opponent_results.length; i++) {
-        winrate = ((opponent_results[i].wins / opponent_results[i].games) * 100).toFixed(2) || 0
-        console.log(`| ${opponent_results[i].code}: ${opponent_results[i].wins} wins in ${opponent_results[i].games} games (${winrate}% win rate)`)
+    top_10 = opponent_results.slice(0,10)
+    for (i = 0; i < top_10.length; i++) {
+        winrate = ((top_10[i].wins / top_10[i].games) * 100).toFixed(2) || 0
+        console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}% win rate)`)
     }
 }
 console.log('-------------------------------')
