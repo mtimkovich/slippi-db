@@ -145,6 +145,7 @@ for (i = 0; i < files.length; i++) {
         console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}.`)
         total_games++
         character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
+        nickname_totals[player_name] = (nickname_totals[player_name] + 1) || 1
         opponent_totals[opponent_code] = (opponent_totals[opponent_code] + 1) || 1
     }
 
