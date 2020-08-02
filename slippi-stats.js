@@ -161,6 +161,8 @@ for (i = 0; i < files.length; i++) {
         real_opponent_code = player_codes[opponent_num]
     }
     counted_seconds += game_seconds
+    console.log(counted_seconds)
+    console.log(total_seconds)
 }
 
 if (!total_games) {
@@ -171,10 +173,10 @@ if (!total_games) {
 win_rate = (total_wins / total_games * 100).toFixed(2)
 
 function secondsToHMS(seconds) {
-    var measuredTime = new Date(null)
-    measuredTime.setSeconds(seconds)
-    time_string = measuredTime.toISOString().substr(11, 8)
-    return time_string
+    const format = val => `0${Math.floor(val)}`.slice(-2)
+    const hours = seconds / 3600
+    const minutes = (seconds % 3600) / 60  
+    return [hours, minutes, seconds % 60].map(format).join(':')
 }
 
 console.log('\n------- OVERALL RESULTS -------')
