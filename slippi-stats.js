@@ -12,7 +12,7 @@ var characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'K
 if (process.argv.length == 2) {
     console.log('| Provides cumulative stats from Slippi replays')
     console.log('| USAGE: node slippi-stats.js <nickname/code> [opponent nickname/code]')
-    console.log("| Script checks current folder and subfolders. Include opponent's info if you want head to head stats")
+    console.log("| Script checks current folder and subfolders. Include opponent's info if you want only head to head stats")
     console.log('| Note: Replays with no player data (e.g. replays made before Slippi 2.1.0) are skipped (but counted in overall playtime')
     process.exit()
 }
@@ -37,6 +37,7 @@ var total_seconds = 0
 var counted_seconds = 0
 var character_totals = []
 var character_wins = [] 
+var character_playtime = []
 var nickname_totals = []
 var nickname_wins = []
 var opponent_totals = []
@@ -161,8 +162,7 @@ for (i = 0; i < files.length; i++) {
         real_opponent_code = player_codes[opponent_num]
     }
     counted_seconds += game_seconds
-    console.log(counted_seconds)
-    console.log(total_seconds)
+    character_playtime[player_character_num] = (character_playtime[player_character_num] + game_seconds) || game_seconds
 }
 
 if (!total_games) {
@@ -191,7 +191,8 @@ for (i in character_totals) {
     wins = character_wins[i] || 0
     games = character_totals[i]
     winrate = ((wins / games) * 100).toFixed(2) || 0
-    character_results.push({character: characters[i], wins: wins || 0, games: games})
+    playtime = 
+    character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i]})
 }
 
 // Sort character results list by games played in descending order
@@ -202,7 +203,8 @@ character_results.sort(function(a, b) {
 // Display character results
 for (i = 0; i < character_results.length; i++) {
     winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
-    console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}% win rate)`)
+    playtime = secondsToHMS(character_results[i].playtime)
+    console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}% win rate) - ${playtime}`)
 }
 
 console.log('------ NICKNAME RESULTS -------')

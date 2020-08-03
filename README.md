@@ -6,8 +6,8 @@ A script using [slippi-js](https://github.com/project-slippi/slippi-js) to calcu
 Instructions for Windows.
 
 1. Place the executable from the [Releases](https://github.com/BrodyVoth/slippi-cumulative-stats/releases/latest) page into a folder with replays. (It also checks subfolders)
-2. Open a command line in the directory. (Shift + Right-click in the folder and click Open Powershell Window here)
-3. Run `.\slippi-cumulative-stats-win.exe <nickname/code> [opponent nickname/code]`. (Connect codes may be more reliable)
+2. Open a command line in the directory. (Shift + Right-click in the folder and click Open Powershell window here)
+3. Run `.\slippi-cumulative-stats-win.exe <nickname/code> [opponent nickname/code]`
 
 Note: Replays are by default saved in `Documents/Slippi` but replays created before Jun 30, 2020 may be in your Dolphin folder.
 
@@ -15,7 +15,7 @@ Note: Replays are by default saved in `Documents/Slippi` but replays created bef
 
 ``.\slippi-cumulative-stats-win.exe zimp#721 bullets``
 
-![Example results](https://i.imgur.com/ET0bsZ3.png)
+![Example results](https://i.imgur.com/odEG9EM.png)
 
 ## Win conditions
 * You finished with more stocks than your opponent
