@@ -8,6 +8,7 @@
   "license": "ISC",
   "dependencies": {
     "@slippi/slippi-js": "^5.0.3",
-    "glob": "^7.1.6"
+    "glob": "^7.1.6",
+    "readline-sync": "^1.4.10"
   }
 }

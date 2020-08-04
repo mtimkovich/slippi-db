@@ -1,24 +1,25 @@
 var glob = require("glob")
 const { default: SlippiGame } = require('@slippi/slippi-js')
+var readlineSync = require('readline-sync');
 
 // Characters ordered by ID
 var characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'Kirby', 'Bowser',
             'Link', 'Luigi', 'Mario', 'Marth', 'Mewtwo', 'Ness', 'Peach', 'Pikachu',
             'Ice Climbers', 'Jigglypuff', 'Samus', 'Yoshi', 'Zelda', 'Sheik', 'Falco',
             'Young Link', 'Dr. Mario', 'Roy', 'Pichu', 'Ganondorf']
-            
 
-// If no parameters used, provide usage information
-if (process.argv.length == 2) {
-    console.log('| Provides cumulative stats from Slippi replays')
-    console.log('| USAGE: node slippi-stats.js <nickname/code> [opponent nickname/code]')
-    console.log("| Script checks current folder and subfolders. Include opponent's info if you want only head to head stats")
-    console.log('| Note: Replays with no player data (e.g. replays made before Slippi 2.1.0) are skipped (but counted in overall playtime')
-    process.exit()
-}
+console.log('| Slippi Cumulative Stats')
+console.log('-------------------------------')
+console.log('| Provides cumulative stats from Slippi replays')
+console.log('| USAGE: node slippi-stats.js <nickname/code> [opponent nickname/code]')
+console.log("| Script checks current folder and subfolders. Include opponent's info if you want only head to head stats")
+console.log('| Note: Replays with no player data (pre-July 2020) are skipped (but counted in overall playtime)')
+console.log('-------------------------------')
+    
+const user_player = readlineSync.question('Enter your connect code (or nickname): ').toLowerCase()
 
-const user_player = process.argv[2].toLowerCase()
-const opponent_arg = process.argv[3] || false
+// const user_player = process.argv[2].toLowerCase()
+const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all results): ") || false
 
 if (opponent_arg) {
     opponent_player = opponent_arg.toLowerCase()
@@ -27,7 +28,8 @@ if (opponent_arg) {
 const files = glob.sync("**/*.slp");
 
 if (files.length == 0) {
-    console.log('No replays found. Script should be ran in the same folder or a parent folder of the replays.')
+    // Use question to prevent automatic close
+    readlineSync.question("No replays found. Script should be ran in the same folder or a parent folder of the replays.")
     process.exit()
 }
 
@@ -63,7 +65,7 @@ for (i = 0; i < files.length; i++) {
         continue
       }
     if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
-        console.log(`${i}: Replay ${files[i]} is outdated or offline. (Missing names) Ignoring results...`)
+        console.log(`${i}: Replay ${files[i]} is old or offline. (Missing player info) Ignoring results...`)
         continue
     }
 
@@ -166,7 +168,8 @@ for (i = 0; i < files.length; i++) {
 }
 
 if (!total_games) {
-    opponent_arg ? console.log(`No matches found for ${user_player} vs ${opponent_arg}.`) : console.log(`No matches found for ${user_player}.`)
+    // Use question to prevent automatic close
+    opponent_arg ? readlineSync.question(`No matches found for ${user_player} vs ${opponent_arg}.`) : readlineSync.question(`No matches found for ${user_player}.`)
     process.exit()
 }
 
@@ -239,4 +242,6 @@ if (!opponent_arg) {
         console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}% win rate)`)
     }
 }
-console.log('-------------------------------')
+
+// Use question to prevent automatic close
+readlineSync.question('-------------------------------')
