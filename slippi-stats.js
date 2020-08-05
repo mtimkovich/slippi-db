@@ -130,7 +130,8 @@ for (i = 0; i < files.length; i++) {
         opponent_code = player_codes[opponent_num]
 
         if (character_arg && opponent_character.toLowerCase() !== character_requested) {
-            console.log(`${i}: ${opponent_name} not playing ${character_requested}. (Found ${opponent_character}) Ignoring results...`)
+            requested_character_num = characters_lowercase.indexOf(character_requested)
+            console.log(`${i}: ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results...`)
             continue
         }
 
