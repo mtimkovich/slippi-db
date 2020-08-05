@@ -212,7 +212,7 @@ character_results.sort(function(a, b) {
 for (i = 0; i < character_results.length; i++) {
     winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
     playtime = secondsToHMS(character_results[i].playtime)
-    console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}% win rate) - ${playtime}`)
+    console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}%) - ${playtime}`)
 }
 
 console.log('------ NICKNAME RESULTS -------')
@@ -221,7 +221,7 @@ for (i in nickname_totals) {
     wins = nickname_wins[i] || 0
     games = nickname_totals[i]
     winrate = ((wins / games) * 100).toFixed(2) || 0
-    console.log(`| ${i}: ${wins} wins in ${games} games (${winrate}% win rate)`)
+    console.log(`| ${i}: ${wins} wins in ${games} games (${winrate}%)`)
 }
 
 if (!opponent_arg) {
@@ -244,7 +244,7 @@ if (!opponent_arg) {
     top_10 = opponent_results.slice(0,10)
     for (i = 0; i < top_10.length; i++) {
         winrate = ((top_10[i].wins / top_10[i].games) * 100).toFixed(2) || 0
-        console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}% win rate)`)
+        console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}%)`)
     }
 }
 
