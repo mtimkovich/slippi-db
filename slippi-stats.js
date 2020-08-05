@@ -11,7 +11,6 @@ var characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'K
 console.log('| Slippi Cumulative Stats')
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
-console.log('| USAGE: node slippi-stats.js <nickname/code> [opponent nickname/code]')
 console.log("| Script checks current folder and subfolders. Include opponent's info if you want only head to head stats")
 console.log('| Note: Replays with no player data (pre-July 2020) are skipped (but counted in overall playtime)')
 console.log('-------------------------------')
@@ -64,8 +63,14 @@ for (i = 0; i < files.length; i++) {
         console.log(`${i}: More than 2 players (${files[i]}). Ignoring results...`)
         continue
       }
-    if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
-        console.log(`${i}: Replay ${files[i]} is old or offline. (Missing player info) Ignoring results...`)
+    try {
+        if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
+            console.log(`${i}: Replay ${files[i]} is old or offline. (Missing player info) Ignoring results...`)
+            continue
+        }
+    }
+    catch(err) {
+        console.log(`${i}: Replay ${files[i]} is corrupted. (Missing player info) Ignoring results...`)
         continue
     }
 
