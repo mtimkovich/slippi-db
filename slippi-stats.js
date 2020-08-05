@@ -58,6 +58,7 @@ var nickname_totals = []
 var nickname_wins = []
 var opponent_totals = []
 var opponent_wins = []
+var final_player_name = user_player
 
 console.log(`${files.length} replays found.`)
 
