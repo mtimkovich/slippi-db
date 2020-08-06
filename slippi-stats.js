@@ -56,8 +56,10 @@ var character_wins = []
 var character_playtime = []
 var nickname_totals = []
 var nickname_wins = []
+var nickname_playtime = []
 var opponent_totals = []
 var opponent_wins = []
+var opponent_playtime = []
 var final_player_name = user_player
 
 console.log(`${files.length} replays found.`)
@@ -195,6 +197,9 @@ for (i = 0; i < files.length; i++) {
         }
         counted_seconds += game_seconds
         character_playtime[player_character_num] = (character_playtime[player_character_num] + game_seconds) || game_seconds
+        opponent_playtime[opponent_code] = (opponent_playtime[opponent_code] + game_seconds) || game_seconds
+        nickname_playtime[player_name] = (nickname_playtime[player_name] + game_seconds) || game_seconds
+
     }
     catch {
         console.log(`${i}: Error reading replay (${files[i]}). Ignoring results...`)
@@ -229,7 +234,6 @@ for (i in character_totals) {
     wins = character_wins[i] || 0
     games = character_totals[i]
     winrate = ((wins / games) * 100).toFixed(2) || 0
-    playtime = 
     character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i]})
 }
 
@@ -251,7 +255,8 @@ for (i in nickname_totals) {
     wins = nickname_wins[i] || 0
     games = nickname_totals[i]
     winrate = ((wins / games) * 100).toFixed(2) || 0
-    console.log(`| ${i}: ${wins} wins in ${games} games (${winrate}%)`)
+    playtime = secondsToHMS(nickname_playtime[i]) || '00:00:00'
+    console.log(`| ${i}: ${wins} wins in ${games} games (${winrate}%) - ${playtime}`)
 }
 
 if (!opponent_arg) {
@@ -262,7 +267,7 @@ if (!opponent_arg) {
         wins = opponent_wins[i] || 0
         games = opponent_totals[i]
         winrate = ((wins / games) * 100).toFixed(2) || 0
-        opponent_results.push({code: i, wins: wins || 0, games: games})
+        opponent_results.push({code: i, wins: wins || 0, games: games, playtime: opponent_playtime[i]})
     }
 
     // Sort opponents results list by games played in descending order
@@ -274,7 +279,8 @@ if (!opponent_arg) {
     top_10 = opponent_results.slice(0,10)
     for (i = 0; i < top_10.length; i++) {
         winrate = ((top_10[i].wins / top_10[i].games) * 100).toFixed(2) || 0
-        console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}%)`)
+        playtime = secondsToHMS(top_10[i].playtime) || '00:00:00'
+        console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}%) - ${playtime}`)
     }
 }
 
