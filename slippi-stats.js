@@ -13,7 +13,7 @@ var characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & 
             'ice climbers', 'jigglypuff', 'samus', 'yoshi', 'zelda', 'sheik', 'falco',
             'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf']            
 
-console.log('| Slippi Cumulative Stats v1.6.2')
+console.log('| Slippi Cumulative Stats v1.7.0')
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
 console.log("| Script checks current folder and subfolders. Include opponent's info if you want more specific stats")
@@ -26,6 +26,7 @@ const user_player = readlineSync.question('Enter your connect code (or nickname)
 // const user_player = process.argv[2].toLowerCase()
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
 const character_arg = readlineSync.question("Enter your opponent's character (Optional. Leave blank for all matchups): ") || false
+const ignored_arg = readlineSync.question("Enter any opponent's codes/names to skip, separated by a comma (Optional): ")
 
 if (opponent_arg) {
     opponent_player = opponent_arg.toLowerCase()
@@ -37,6 +38,10 @@ if (character_arg) {
         console.log(`${character_arg} is not a valid character. Valid characters:`)
         readlineSync.question(`${characters_lowercase.join(', ')}`)
     }
+}
+
+if (ignored_arg) {
+    ignored_list = ignored_arg.toLowerCase().split(",")
 }
 
 const files = glob.sync("**/*.slp");
@@ -96,6 +101,7 @@ for (i = 0; i < files.length; i++) {
         player_num = 'none'
         opponent_num = 'none'
         opponent_found = false
+        ignored_opponent_found = false
         player_names = [metadata.players[0].names.netplay, metadata.players[1].names.netplay]
         player_codes = [metadata.players[0].names.code, metadata.players[1].names.code]
         player_characters = [settings.players[0].characterId, settings.players[1].characterId]
@@ -105,6 +111,15 @@ for (i = 0; i < files.length; i++) {
             if (opponent_arg) {
                 if (player_names[j].toLowerCase() == opponent_player || player_codes[j].toLowerCase() == opponent_player) {
                     opponent_found = true
+                }
+            }
+            if (ignored_arg) {
+                for (k of ignored_list) {
+                    skipped_opponent = k.trim().toLowerCase()
+                    if (player_names[j].toLowerCase() == skipped_opponent || player_codes[j].toLowerCase() == skipped_opponent) {
+                        ignored_opponent_found = true
+                        found_ignored_opponent = `${player_names[j]} (${player_codes[j]})`
+                    }
                 }
             }
             if (player_names[j].toLowerCase() == user_player || player_codes[j].toLowerCase() == user_player) {
@@ -120,6 +135,10 @@ for (i = 0; i < files.length; i++) {
         }
         if (opponent_arg && !opponent_found) {
             console.log(`${i}: User ${opponent_player} not found in replay. Ignoring results...`)
+            continue
+        }
+        if (ignored_arg && ignored_opponent_found) {
+            console.log(`${i}: User ${found_ignored_opponent} found in replay. Ignoring results...`)
             continue
         }
 
@@ -201,7 +220,7 @@ for (i = 0; i < files.length; i++) {
         nickname_playtime[player_name] = (nickname_playtime[player_name] + game_seconds) || game_seconds
 
     }
-    catch {
+    catch(err) {
         console.log(`${i}: Error reading replay (${files[i]}). Ignoring results...`)
         continue
     }
@@ -210,6 +229,8 @@ for (i = 0; i < files.length; i++) {
 if (!total_games) {
     // Use question to prevent automatic close
     opponent_arg ? readlineSync.question(`No matches found for ${user_player} vs ${opponent_arg}.`) : readlineSync.question(`No matches found for ${user_player}.`)
+    if (character_arg) { console.log(`| Checking matches against: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
+    if (ignored_arg) { console.log(`| Ignoring matches against: ${ignored_list}`) }
     process.exit()
 }
 
@@ -224,6 +245,8 @@ function secondsToHMS(seconds) {
 
 console.log('\n------- OVERALL RESULTS -------')
 opponent_arg ? console.log(`| ${final_player_name} (${real_player_code}) vs ${final_opponent_name} (${real_opponent_code})`) : console.log(`| ${final_player_name} (${real_player_code})`)
+if (character_arg) { console.log(`| Checking matches against: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
+if (ignored_arg) { console.log(`| Ignoring matches against: ${ignored_list}`) }
 console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
 console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} total time spent in matches (including skipped replays)`)
 
