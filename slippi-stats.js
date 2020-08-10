@@ -26,19 +26,23 @@ const user_player = readlineSync.question('Enter your connect code (or nickname)
 // const user_player = process.argv[2].toLowerCase()
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
 const character_arg = readlineSync.question("Enter your opponent's character (Optional. Leave blank for all matchups): ") || false
-const ignored_arg = readlineSync.question("Enter any opponent's codes/names to skip, separated by a comma (Optional): ")
-
-if (opponent_arg) {
-    opponent_player = opponent_arg.toLowerCase()
-}
 
 if (character_arg) {
     character_requested = character_arg.toLowerCase()
     if (!characters_lowercase.includes(character_requested)) {
         console.log(`${character_arg} is not a valid character. Valid characters:`)
         readlineSync.question(`${characters_lowercase.join(', ')}`)
+        process.exit()
     }
 }
+
+const ignored_arg = readlineSync.question("Enter any opponent's codes/names to skip, separated by a comma (Optional): ")
+
+if (opponent_arg) {
+    opponent_player = opponent_arg.toLowerCase()
+}
+
+
 
 if (ignored_arg) {
     ignored_list = ignored_arg.toLowerCase().split(",")
@@ -228,9 +232,13 @@ for (i = 0; i < files.length; i++) {
 
 if (!total_games) {
     // Use question to prevent automatic close
-    opponent_arg ? readlineSync.question(`No matches found for ${user_player} vs ${opponent_arg}.`) : readlineSync.question(`No matches found for ${user_player}.`)
-    if (character_arg) { console.log(`| Checking matches against: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
-    if (ignored_arg) { console.log(`| Ignoring matches against: ${ignored_list}`) }
+    console.log('\n| No games found matching requested parameters.')
+    console.log('-------------------------------')
+    opponent_arg ? console.log(`| Players: ${user_player} vs ${opponent_arg}`) : console.log(`| Player: ${user_player}`)
+    if (character_arg) { console.log(`| Opponent character: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
+    if (ignored_arg) { console.log(`| Ignored opponents: ${ignored_arg}`) }
+    console.log('-------------------------------')
+    readlineSync.question(`| Try again with different parameters.`)
     process.exit()
 }
 
@@ -245,8 +253,8 @@ function secondsToHMS(seconds) {
 
 console.log('\n------- OVERALL RESULTS -------')
 opponent_arg ? console.log(`| ${final_player_name} (${real_player_code}) vs ${final_opponent_name} (${real_opponent_code})`) : console.log(`| ${final_player_name} (${real_player_code})`)
-if (character_arg) { console.log(`| Checking matches against: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
-if (ignored_arg) { console.log(`| Ignoring matches against: ${ignored_list}`) }
+if (character_arg) { console.log(`| Opponent character: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
+if (ignored_arg) { console.log(`| Ignored opponents: ${ignored_arg}`) }
 console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
 console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} total time spent in matches (including skipped replays)`)
 
