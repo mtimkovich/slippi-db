@@ -42,8 +42,6 @@ if (opponent_arg) {
     opponent_player = opponent_arg.toLowerCase()
 }
 
-
-
 if (ignored_arg) {
     ignored_list = ignored_arg.toLowerCase().split(",")
 }
@@ -179,7 +177,7 @@ for (i = 0; i < files.length; i++) {
         end_lower_percent = (player_kills == opponent_kills) && player_final_percent < opponent_final_percent
         try {
             end_opponent_LRAS = (game.getGameEnd().lrasInitiatorIndex == opponent_num)
-            end_player_LRAS = (game.getGameEnd.lrasInitiatorIndex == player_num)
+            end_player_LRAS = (game.getGameEnd().lrasInitiatorIndex == player_num)
         }
         catch {
             end_opponent_LRAS = false
