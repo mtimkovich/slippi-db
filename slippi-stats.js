@@ -31,7 +31,7 @@ if (character_arg) {
     character_requested = character_arg.toLowerCase()
     if (!characters_lowercase.includes(character_requested)) {
         console.log(`${character_arg} is not a valid character. Valid characters:`)
-        readlineSync.question(`${characters_lowercase.join(', ')}`)
+        readlineSync.question(`${characters_lowercase.sort().join(', ')}`)
         process.exit()
     }
 }
