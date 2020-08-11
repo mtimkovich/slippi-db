@@ -13,7 +13,7 @@ var characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & 
             'ice climbers', 'jigglypuff', 'samus', 'yoshi', 'zelda', 'sheik', 'falco',
             'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf']            
 
-console.log('| Slippi Cumulative Stats v1.7.0')
+console.log('| Slippi Cumulative Stats v1.7.1')
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
 console.log("| Script checks current folder and subfolders. Include opponent's info if you want more specific stats")
