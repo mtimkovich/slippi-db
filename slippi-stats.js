@@ -51,7 +51,7 @@ if (ignored_arg) {
     ignored_list = ignored_arg.toLowerCase().split(",")
 }
 
-const files = glob.sync("C:/Users/crdni/Documents/Slippi/*.slp")
+const files = glob.sync("**/*.slp")
 
 if (files.length == 0) {
     // Use question to prevent automatic close
