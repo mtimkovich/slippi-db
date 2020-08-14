@@ -42,6 +42,7 @@ if (character_arg) {
 
 const ignored_arg = readlineSync.question("Enter any opponent's codes/names to skip, separated by a comma (Optional): ")
 
+let opponent_player;
 if (opponent_arg) {
     opponent_player = opponent_arg.toLowerCase()
 }
@@ -73,6 +74,9 @@ var opponent_totals = []
 var opponent_wins = []
 var opponent_playtime = []
 var final_player_name = user_player
+let real_player_code
+let final_opponent_name
+let real_opponent_code
 
 console.log(`${files.length} replays found.`)
 
@@ -88,6 +92,7 @@ const staticPool = new StaticPool({
             file,
             index,
             opponent_arg,
+            opponent_player,
             user_player,
             ignored_arg,
             ignored_list,
@@ -225,14 +230,14 @@ const staticPool = new StaticPool({
     
             // Try to find last used nickname and actual connect code to display at the end
             if (player_name.length > 0) {
-                final_player_name = player_name
+                data.final_player_name = player_name
             }
             data.real_player_code = player_codes[player_num]
             if (opponent_arg && player_names[opponent_num]) {
                 if (opponent_name.length > 0) {
-                    final_opponent_name = opponent_name
+                    data.final_opponent_name = opponent_name
                 }
-                real_opponent_code = player_codes[opponent_num]
+                data.real_opponent_code = player_codes[opponent_num]
             }
             data.game_seconds = game_seconds
             return data
@@ -253,6 +258,7 @@ const staticPool = new StaticPool({
             file: files[index],
             index,
             opponent_arg,
+            opponent_player,
             user_player,
             ignored_arg,
             ignored_list,
@@ -267,8 +273,20 @@ const staticPool = new StaticPool({
         total_wins += r.total_wins || 0
         total_seconds += r.total_seconds || 0
         counted_seconds += r.game_seconds || 0
+
         // TODO only do this for the last one?
-        real_player_code = r.real_player_code
+        if (!!r.real_player_code) {
+            real_player_code = r.real_player_code
+        }
+        if (!!r.final_player_name) {
+            final_player_name = r.final_player_name
+        }
+        if (!!r.final_opponent_name) {
+            final_opponent_name = r.final_opponent_name
+        }
+        if (!!r.real_opponent_code) {
+            real_opponent_code = r.real_opponent_code
+        }
         
         if (!!r.player_character_num) {
             character_totals[r.player_character_num] = (character_totals[r.player_character_num] + 1) || 1
