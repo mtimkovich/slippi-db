@@ -106,21 +106,21 @@ const staticPool = new StaticPool({
                 data.total_seconds = game_seconds
             }
             catch(err) {
-                console.log(`${index}: Error reading replay metadata (${file}). Ignoring results...`)
+                console.log(`${index}: Error reading replay metadata. Ignoring results... (${file})`)
                 return data
             }
             if (settings.players.length !== 2) {
-                console.log(`${index}: More than 2 players (${file}). Ignoring results...`)
+                console.log(`${index}: More than 2 players. Ignoring results... (${file})`)
                 return data
             }
             try {
                 if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
-                    console.log(`${index}: Replay ${file} is old or offline. (Missing player info) Ignoring results...`)
+                    console.log(`${index}: Replay is old or offline. (Missing player info) Ignoring results... (${file})`)
                     return data
                 }
             }
             catch(err) {
-                console.log(`${index}: Replay ${file} is corrupted. (Missing player info) Ignoring results...`)
+                console.log(`${index}: Replay is corrupted. (Missing player info) Ignoring results... (${file})`)
                 return data
             }
     
@@ -156,15 +156,15 @@ const staticPool = new StaticPool({
                 }
             }
             if (player_num == 'none') {
-                console.log(`${index}: User ${user_player} not found in replay. Ignoring results...`)
+                console.log(`${index}: User ${user_player} not found in replay. Ignoring results... (${file})`)
                 return data
             }
             if (opponent_arg && !opponent_found) {
-                console.log(`${index}: User ${opponent_player} not found in replay. Ignoring results...`)
+                console.log(`${index}: User ${opponent_player} not found in replay. Ignoring results... (${file})`)
                 return data
             }
             if (ignored_arg && ignored_opponent_found) {
-                console.log(`${index}: User ${found_ignored_opponent} found in replay. Ignoring results...`)
+                console.log(`${index}: User ${found_ignored_opponent} found in replay. Ignoring results... (${file})`)
                 return data
             }
     
@@ -179,7 +179,7 @@ const staticPool = new StaticPool({
     
             if (character_arg && opponent_character.toLowerCase() !== character_requested) {
                 requested_character_num = characters_lowercase.indexOf(character_requested)
-                console.log(`${index}: ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results...`)
+                console.log(`${index}: ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results... (${file})`)
                 return data
             }
     
@@ -190,7 +190,7 @@ const staticPool = new StaticPool({
     
             // Tie conditions
             if (game_seconds < 30 || (player_kills == 0 && opponent_kills == 0)) {
-                console.log(`${index}: Game lasted less than 30 seconds or no stocks were taken. Ignoring results...`)
+                console.log(`${index}: Game lasted less than 30 seconds or no stocks were taken. Ignoring results... (${file})`)
                 return data
             }
     
@@ -213,10 +213,10 @@ const staticPool = new StaticPool({
             // If the player didn't quit out AND has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
             //if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
             if (end_more_kills || end_lower_percent) {
-                console.log(`${index}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}!`)
+                console.log(`${index}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}! (${file})`)
                 data.total_wins = 1
             } else {
-                console.log(`${index}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}.`)
+                console.log(`${index}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}. (${file})`)
             }
             data.total_games = 1
             data.player_character_num = player_character_num
@@ -237,7 +237,8 @@ const staticPool = new StaticPool({
             data.game_seconds = game_seconds
             return data
         } catch (err) {
-            console.log(`${index}: Error reading replay (${file}). Ignoring results...`)
+            console.log(`${index}: Error reading replay. Ignoring results... (${file})`)
+            console.log(err)
             return data
         }
     }

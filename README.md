@@ -18,9 +18,11 @@ Note: Replays are by default saved in `Documents/Slippi` but replays created bef
 ## Win conditions
 * You finished with more stocks than your opponent
 * You finished with the same amount of stocks but a lower percent than your opponent **or**
-* Your opponent LRA-Start quit the match.
+* Your opponent LRA-Start quit the match.*
 
-Otherwise, it's considered a loss. Win conditions are ignored and a loss is counted if you LRA-Start quit the match. Matches shorter than 30 seconds or with no deaths are never counted.
+Otherwise, it's considered a loss. Win conditions are ignored and a loss is counted if you LRA-Start quit the match.* Matches shorter than 30 seconds or with no deaths are never counted.
+
+*LRA-Start detection is currently disabled due to inaccurate results. If someone quits, current stocks and percents are used. 
 
 ## Run from source
 Requires Node.js and npm.
