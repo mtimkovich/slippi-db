@@ -79,6 +79,10 @@ console.log(`${files.length} replays found.`)
 const staticPool = new StaticPool({
     size: cores,
     task: (args) => {
+        // everything in this closure is isolated from the rest of the script.
+        // if you need variables in here, you have to pass them through the workerData, aka "args".
+        // if you need to mutate data from the outside, you need to return that data on the "data"
+        // variable and process it later as part of "results".
         const { default: SlippiGame } = require('@slippi/slippi-js')
         const {
             file,
@@ -99,7 +103,7 @@ const staticPool = new StaticPool({
             try {
                 game_seconds = Math.floor(metadata.lastFrame / 60)
                 game_length = Math.floor(game_seconds / 60) + ":" + (game_seconds % 60 ? (game_seconds % 60).toString().padStart(2, '0') : '00')
-                data["total_seconds"] = game_seconds
+                data.total_seconds = game_seconds
             }
             catch(err) {
                 console.log(`${index}: Error reading replay metadata (${file}). Ignoring results...`)
@@ -207,27 +211,27 @@ const staticPool = new StaticPool({
             // If the player didn't quit out AND has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
             if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
                 console.log(`${index}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}!`)
-                data["total_wins"] = 1
+                data.total_wins = 1
             } else {
                 console.log(`${index}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}.`)
             }
-            data["total_games"] = 1
-            data["player_character_num"] = player_character_num
-            data["player_name"] = player_name
-            data["opponent_code"] = opponent_code
+            data.total_games = 1
+            data.player_character_num = player_character_num
+            data.player_name = player_name
+            data.opponent_code = opponent_code
     
             // Try to find last used nickname and actual connect code to display at the end
             if (player_name.length > 0) {
                 final_player_name = player_name
             }
-            data["real_player_code"] = player_codes[player_num]
+            data.real_player_code = player_codes[player_num]
             if (opponent_arg && player_names[opponent_num]) {
                 if (opponent_name.length > 0) {
                     final_opponent_name = opponent_name
                 }
                 real_opponent_code = player_codes[opponent_num]
             }
-            data["game_seconds"] = game_seconds
+            data.game_seconds = game_seconds
             return data
         } catch (err) {
             console.log(`${index}: Error reading replay (${file}). Ignoring results...`)
