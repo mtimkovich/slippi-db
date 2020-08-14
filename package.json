@@ -9,6 +9,7 @@
   "dependencies": {
     "@slippi/slippi-js": "^5.0.3",
     "glob": "^7.1.6",
+    "node-worker-threads-pool": "^1.4.1",
     "readline-sync": "^1.4.10"
   }
 }
