@@ -1,18 +1,18 @@
-var glob = require("glob")
-var readlineSync = require('readline-sync');
-const os = require("os");
-const { performance } = require('perf_hooks');
-const { StaticPool } = require("node-worker-threads-pool");
+const glob = require("glob")
+const readlineSync = require('readline-sync');
+const os = require("os")
+const { performance } = require('perf_hooks')
+const { StaticPool } = require("node-worker-threads-pool")
 
-const cores = os.cpus().length;
+const cores = os.cpus().length
 
 // Characters ordered by ID
-var characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'Kirby', 'Bowser',
+const characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'Kirby', 'Bowser',
             'Link', 'Luigi', 'Mario', 'Marth', 'Mewtwo', 'Ness', 'Peach', 'Pikachu',
             'Ice Climbers', 'Jigglypuff', 'Samus', 'Yoshi', 'Zelda', 'Sheik', 'Falco',
             'Young Link', 'Dr. Mario', 'Roy', 'Pichu', 'Ganondorf']
 
-var characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & watch', 'kirby', 'bowser',
+const characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & watch', 'kirby', 'bowser',
             'link', 'luigi', 'mario', 'marth', 'mewtwo', 'ness', 'peach', 'pikachu',
             'ice climbers', 'jigglypuff', 'samus', 'yoshi', 'zelda', 'sheik', 'falco',
             'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf']            
@@ -51,7 +51,7 @@ if (ignored_arg) {
     ignored_list = ignored_arg.toLowerCase().split(",")
 }
 
-const files = glob.sync("C:/Users/crdni/Documents/Slippi/*.slp");
+const files = glob.sync("C:/Users/crdni/Documents/Slippi/*.slp")
 
 if (files.length == 0) {
     // Use question to prevent automatic close
@@ -74,7 +74,7 @@ var opponent_wins = []
 var opponent_playtime = []
 var final_player_name = user_player
 
-console.log(`${files.length} replays found.`);
+console.log(`${files.length} replays found.`)
 
 const staticPool = new StaticPool({
     size: cores,
@@ -90,8 +90,8 @@ const staticPool = new StaticPool({
             characters,
             characters_lowercase,
             character_arg,
-        } = args;
-        let data = {};
+        } = args
+        let data = {}
         try {
             const game = new SlippiGame(file)
             const settings = game.getSettings()
@@ -103,21 +103,21 @@ const staticPool = new StaticPool({
             }
             catch(err) {
                 console.log(`${index}: Error reading replay metadata (${file}). Ignoring results...`)
-                return data;
+                return data
             }
             if (settings.players.length !== 2) {
                 console.log(`${index}: More than 2 players (${file}). Ignoring results...`)
-                return data;
+                return data
             }
             try {
                 if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
                     console.log(`${index}: Replay ${file} is old or offline. (Missing player info) Ignoring results...`)
-                    return data;
+                    return data
                 }
             }
             catch(err) {
                 console.log(`${index}: Replay ${file} is corrupted. (Missing player info) Ignoring results...`)
-                return data;
+                return data
             }
     
             player_num = 'none'
@@ -153,15 +153,15 @@ const staticPool = new StaticPool({
             }
             if (player_num == 'none') {
                 console.log(`${index}: User ${user_player} not found in replay. Ignoring results...`)
-                return data;
+                return data
             }
             if (opponent_arg && !opponent_found) {
                 console.log(`${index}: User ${opponent_player} not found in replay. Ignoring results...`)
-                return data;
+                return data
             }
             if (ignored_arg && ignored_opponent_found) {
                 console.log(`${index}: User ${found_ignored_opponent} found in replay. Ignoring results...`)
-                return data;
+                return data
             }
     
             player_character_num = player_characters[player_num]
@@ -176,7 +176,7 @@ const staticPool = new StaticPool({
             if (character_arg && opponent_character.toLowerCase() !== character_requested) {
                 requested_character_num = characters_lowercase.indexOf(character_requested)
                 console.log(`${index}: ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results...`)
-                return data;
+                return data
             }
     
             const stats = game.getStats()
@@ -187,7 +187,7 @@ const staticPool = new StaticPool({
             // Tie conditions
             if (game_seconds < 30 || (player_kills == 0 && opponent_kills == 0)) {
                 console.log(`${index}: Game lasted less than 30 seconds or no stocks were taken. Ignoring results...`)
-                return data;
+                return data
             }
     
             player_final_percent = game.getLatestFrame().players[player_num].post.percent
@@ -228,17 +228,17 @@ const staticPool = new StaticPool({
                 real_opponent_code = player_codes[opponent_num]
             }
             data["game_seconds"] = game_seconds
-            return data;
+            return data
         } catch (err) {
             console.log(`${index}: Error reading replay (${file}). Ignoring results...`)
-            return data;
+            return data
         }
     }
 });
 
 (async () => {
     var startTime = performance.now()
-    var promises = [];
+    var promises = []
     for (var index = 0; index < files.length; index++) {
         // pretty sure things that are pass by reference just do not work. Will need to bundle up EVERYTHING into data and parse it afterwards.
         promises.push(staticPool.exec({
@@ -253,7 +253,7 @@ const staticPool = new StaticPool({
             character_arg,
         }))
     }
-    const results = await Promise.all(promises);
+    const results = await Promise.all(promises)
     results.forEach((r) => {
         total_games += r.total_games || 0
         total_wins += r.total_wins || 0
@@ -282,12 +282,11 @@ const staticPool = new StaticPool({
             nickname_wins[r.player_name] = (nickname_wins[r.player_name] + 1) || 1
             opponent_wins[r.opponent_code] = (opponent_wins[r.opponent_code] + 1) || 1
         }
-    });
+    })
     var endTime = performance.now()
-    console.log("")
-    console.log("Processing took " + (endTime - startTime) + " milliseconds.")
-    printReport();
-})();
+    //console.log("Processing took " + (endTime - startTime) + " milliseconds.")
+    printReport()
+})()
 
 function printReport() {
     if (!total_games) {
