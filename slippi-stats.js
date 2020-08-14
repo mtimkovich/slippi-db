@@ -13,7 +13,7 @@ var characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & 
             'ice climbers', 'jigglypuff', 'samus', 'yoshi', 'zelda', 'sheik', 'falco',
             'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf']            
 
-console.log('| Slippi Cumulative Stats v1.7.1')
+console.log('| Slippi Cumulative Stats v1.7.2')
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
 console.log("| Script checks current folder and subfolders. Include opponent's info if you want more specific stats")
@@ -175,18 +175,21 @@ for (i = 0; i < files.length; i++) {
         opponent_final_percent = game.getLatestFrame().players[opponent_num].post.percent
         end_more_kills = player_kills > opponent_kills
         end_lower_percent = (player_kills == opponent_kills) && player_final_percent < opponent_final_percent
-        try {
-            end_opponent_LRAS = (game.getGameEnd().lrasInitiatorIndex == opponent_num)
-            end_player_LRAS = (game.getGameEnd().lrasInitiatorIndex == player_num)
-        }
-        catch {
-            end_opponent_LRAS = false
-            end_player_LRAS = false
-        } 
+
+        // disabled due to perceived inconsistencies
+        // try {
+        //     end_opponent_LRAS = (game.getGameEnd().lrasInitiatorIndex == opponent_num)
+        //     end_player_LRAS = (game.getGameEnd().lrasInitiatorIndex == player_num)
+        // }
+        // catch {
+        //     end_opponent_LRAS = false
+        //     end_player_LRAS = false
+        // } 
 
         // Every death is considered the opponent's kill
         // If the player didn't quit out AND has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
-        if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
+        // if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
+        if (end_more_kills || end_lower_percent) {
             console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}!`)
             total_wins++
             total_games++
