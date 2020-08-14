@@ -4,7 +4,7 @@ const os = require("os")
 const { performance } = require('perf_hooks')
 const { StaticPool } = require("node-worker-threads-pool")
 
-const cores = os.cpus().length
+const coresToUse = Math.max(os.cpus().length - 1, 1)
 
 // Characters ordered by ID
 const characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'Kirby', 'Bowser',
@@ -77,7 +77,7 @@ var final_player_name = user_player
 console.log(`${files.length} replays found.`)
 
 const staticPool = new StaticPool({
-    size: cores,
+    size: coresToUse,
     task: (args) => {
         // everything in this closure is isolated from the rest of the script.
         // if you need variables in here, you have to pass them through the workerData, aka "args".
