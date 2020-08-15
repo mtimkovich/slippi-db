@@ -288,7 +288,7 @@ const staticPool = new StaticPool({
             real_opponent_code = r.real_opponent_code
         }
         
-        if (!!r.player_character_num) {
+        if (!!r.player_character_num || r.player_character_num == 0) {
             character_totals[r.player_character_num] = (character_totals[r.player_character_num] + 1) || 1
             character_playtime[r.player_character_num] = (character_playtime[r.player_character_num] + r.game_seconds) || r.game_seconds
         }
