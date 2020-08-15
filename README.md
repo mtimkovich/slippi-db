@@ -1,6 +1,6 @@
 # Slippi Cumulative Stats
 
-A script using [slippi-js](https://github.com/project-slippi/slippi-js) to calculate your overall and head to head play times and win rates from replays. Results are shown per character and nickname as well. You can specify your opponent and your opponent's character as well as ignore certain opponents.
+A script using [slippi-js](https://github.com/project-slippi/slippi-js) to calculate your overall and head to head play times and win rates from replays. Results are shown per character, stage, and nickname as well. You can specify your opponent, your opponent's character, and even opponents to skip.
 
 ## Instructions
 Tested on Windows.

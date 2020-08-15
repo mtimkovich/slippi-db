@@ -17,7 +17,7 @@ const characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game 
             'ice climbers', 'jigglypuff', 'samus', 'yoshi', 'zelda', 'sheik', 'falco',
             'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf']            
 
-console.log('| Slippi Cumulative Stats v1.7.2')
+console.log('| Slippi Cumulative Stats v2.0.0')
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
 console.log("| Script checks current folder and subfolders. Include opponent's info if you want more specific stats")
@@ -344,7 +344,7 @@ function printReport() {
     if (character_arg) { console.log(`| Opponent character: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
     if (ignored_arg) { console.log(`| Ignored opponents: ${ignored_arg}`) }
     console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
-    console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} total time spent in matches (including skipped replays)`)
+    console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} including ${files.length - total_games} skipped replays`)
 
     console.log('------ CHARACTER RESULTS ------')
     character_results = []
