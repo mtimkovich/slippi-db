@@ -106,3 +106,4 @@ dist
 # Slippi replays
 test
 *.slp
+*.exe
