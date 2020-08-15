@@ -1,5 +1,5 @@
 const glob = require("glob")
-const readlineSync = require('readline-sync');
+const readlineSync = require('readline-sync')
 const os = require("os")
 const { performance } = require('perf_hooks')
 const { StaticPool } = require("node-worker-threads-pool")
@@ -31,6 +31,7 @@ const user_player = readlineSync.question('Enter your connect code (or nickname)
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
 const character_arg = readlineSync.question("Enter your opponent's character (Optional. Leave blank for all matchups): ") || false
 
+let character_requested
 if (character_arg) {
     character_requested = character_arg.toLowerCase()
     if (!characters_lowercase.includes(character_requested)) {
@@ -42,7 +43,7 @@ if (character_arg) {
 
 const ignored_arg = readlineSync.question("Enter any opponent's codes/names to skip, separated by a comma (Optional): ")
 
-let opponent_player;
+let opponent_player
 if (opponent_arg) {
     opponent_player = opponent_arg.toLowerCase()
 }
@@ -93,6 +94,7 @@ const staticPool = new StaticPool({
             index,
             opponent_arg,
             opponent_player,
+            character_requested,
             user_player,
             ignored_arg,
             ignored_list,
@@ -259,6 +261,7 @@ const staticPool = new StaticPool({
             index,
             opponent_arg,
             opponent_player,
+            character_requested,
             user_player,
             ignored_arg,
             ignored_list,
