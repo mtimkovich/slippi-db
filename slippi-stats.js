@@ -321,7 +321,7 @@ const staticPool = new StaticPool({
             character_wins[r.player_character_num] = (character_wins[r.player_character_num] + 1) || 1
             nickname_wins[r.player_name] = (nickname_wins[r.player_name] + 1) || 1
             opponent_wins[r.opponent_code] = (opponent_wins[r.opponent_code] + 1) || 1
-            stage_wins[r.stage_num] = (stage_wins[r.stage_wins] + 1) || 1
+            stage_wins[r.stage_num] = (stage_wins[r.stage_num] + 1) || 1
         }
     })
     var endTime = performance.now()
