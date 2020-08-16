@@ -1,6 +1,6 @@
 # Slippi Cumulative Stats
 
-A script using [slippi-js](https://github.com/project-slippi/slippi-js) to calculate your overall and head to head play times and win rates from replays. Results are shown per character, stage, and nickname as well. You can specify your opponent, your opponent's character, and even opponents to skip.
+A script using [slippi-js](https://github.com/project-slippi/slippi-js) to calculate your overall and head to head play times and win rates from replays. Results are shown per character and nickname as well. You can specify your opponent and your opponent's character as well as ignore certain opponents.
 
 ## Instructions
 Tested on Windows.
@@ -13,16 +13,14 @@ Note: Replays are by default saved in `Documents/Slippi` but replays created bef
 
 ## Example
 
-![Example results](https://i.imgur.com/17QCGU7.png)
+![Example results](https://i.imgur.com/SmMTRLU.png)
 
 ## Win conditions
 * You finished with more stocks than your opponent
 * You finished with the same amount of stocks but a lower percent than your opponent **or**
-* Your opponent LRA-Start quit the match.*
+* Your opponent LRA-Start quit the match.
 
-Otherwise, it's considered a loss. Win conditions are ignored and a loss is counted if you LRA-Start quit the match.* Matches shorter than 30 seconds or with no deaths are never counted.
-
-*LRA-Start detection is currently disabled due to inaccurate results. If someone quits, current stocks and percents are used. 
+Otherwise, it's considered a loss. Win conditions are ignored and a loss is counted if you LRA-Start quit the match. Matches shorter than 30 seconds or with no deaths are never counted.
 
 ## Run from source
 Requires Node.js and npm.
