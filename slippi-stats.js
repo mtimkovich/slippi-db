@@ -13,6 +13,13 @@ var characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & 
             'ice climbers', 'jigglypuff', 'samus', 'yoshi', 'zelda', 'sheik', 'falco',
             'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf']            
 
+// Stages ordered by ID
+const stages = [null, null, 'Fountain of Dreams', 'Pokémon Stadium', "Princess Peach's Castle", 'Kongo Jungle',
+                'Brinstar', 'Corneria', "Yoshi's Story", 'Onett', 'Mute City', 'Rainbow Cruise', 'Jungle Japes',
+                'Great Bay', 'Hyrule Temple', 'Brinstar Depths', "Yoshi's Island", 'Green Greens', 'Fourside', 
+                'Mushroom Kingdom I', 'Mushroom Kingdom II', null, 'Venom', 'Poké Floats', 'Big Blue', 'Icicle Mountain',
+                'Icetop', 'Flat Zone', 'Dream Land N64', "Yoshi's Island N64", 'Kongo Jungle N64', 'Battlefield', 'Final Destination']
+
 console.log('| Slippi Cumulative Stats v1.7.2')
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
@@ -22,8 +29,6 @@ console.log('| Note: Your answers are not case-sensitive')
 console.log('-------------------------------')
     
 const user_player = readlineSync.question('Enter your connect code (or nickname): ').toLowerCase()
-
-// const user_player = process.argv[2].toLowerCase()
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
 const character_arg = readlineSync.question("Enter your opponent's character (Optional. Leave blank for all matchups): ") || false
 
@@ -67,6 +72,9 @@ var nickname_playtime = []
 var opponent_totals = []
 var opponent_wins = []
 var opponent_playtime = []
+var stage_totals = []
+var stage_wins = []
+var stage_playtime = []
 var final_player_name = user_player
 
 console.log(`${files.length} replays found.`)
@@ -153,12 +161,13 @@ for (i = 0; i < files.length; i++) {
         opponent_name = player_names[opponent_num]
         opponent_code = player_codes[opponent_num]
 
+        stage_num = settings.stageId
+
         if (character_arg && opponent_character.toLowerCase() !== character_requested) {
             requested_character_num = characters_lowercase.indexOf(character_requested)
             console.log(`${i}: ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results... (${files[i]})`)
             continue
         }
-
 
         const stats = game.getStats()
 
@@ -199,13 +208,15 @@ for (i = 0; i < files.length; i++) {
             nickname_wins[player_name] = (nickname_wins[player_name] + 1) || 1
             opponent_totals[opponent_code] = (opponent_totals[opponent_code] + 1) || 1
             opponent_wins[opponent_code] = (opponent_wins[opponent_code] + 1) || 1
-
+            stage_totals[stage_num] = (stage_totals[stage_num] + 1) || 1
+            stage_wins[stage_num] = (stage_wins[stage_num] + 1) || 1
         } else {
             console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}. (${files[i]})`)
             total_games++
             character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
             nickname_totals[player_name] = (nickname_totals[player_name] + 1) || 1
             opponent_totals[opponent_code] = (opponent_totals[opponent_code] + 1) || 1
+            stage_totals[stage_num] = (stage_totals[stage_num] + 1) || 1
         }
 
         // Try to find last used nickname and actual connect code to display at the end
@@ -223,7 +234,7 @@ for (i = 0; i < files.length; i++) {
         character_playtime[player_character_num] = (character_playtime[player_character_num] + game_seconds) || game_seconds
         opponent_playtime[opponent_code] = (opponent_playtime[opponent_code] + game_seconds) || game_seconds
         nickname_playtime[player_name] = (nickname_playtime[player_name] + game_seconds) || game_seconds
-
+        stage_playtime[stage_num] = (stage_playtime[stage_num] + game_seconds) || game_seconds
     }
     catch(err) {
         console.log(`${i}: Error reading replay. Ignoring results... (${files[i]})`)
@@ -279,6 +290,28 @@ for (i = 0; i < character_results.length; i++) {
     winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
     playtime = secondsToHMS(character_results[i].playtime)
     console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}%) - ${playtime}`)
+}
+
+console.log('-------- STAGE RESULTS --------')
+stage_results = []
+// Calculate stage win rates
+for (i in stage_totals) {
+    wins = stage_wins[i] || 0
+    games = stage_totals[i]
+    winrate = ((wins / games) * 100).toFixed(2) || 0
+    stage_results.push({stage: stages[i], wins: wins || 0, games: games, playtime: stage_playtime[i]})
+}
+
+// Sort stage results list by games played in descending order
+stage_results.sort(function(a, b) {
+    return b.games - a.games
+})
+
+// Display stage results
+for (i = 0; i < stage_results.length; i++) {
+    winrate = ((stage_results[i].wins / stage_results[i].games) * 100).toFixed(2) || 0
+    playtime = secondsToHMS(stage_results[i].playtime)
+    console.log(`| ${stage_results[i].stage}: ${stage_results[i].wins} wins in ${stage_results[i].games} games (${winrate}%) - ${playtime}`)
 }
 
 console.log('------ NICKNAME RESULTS -------')
