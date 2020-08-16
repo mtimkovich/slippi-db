@@ -20,7 +20,7 @@ const stages = [null, null, 'Fountain of Dreams', 'Pokémon Stadium', "Princess 
                 'Mushroom Kingdom I', 'Mushroom Kingdom II', null, 'Venom', 'Poké Floats', 'Big Blue', 'Icicle Mountain',
                 'Icetop', 'Flat Zone', 'Dream Land N64', "Yoshi's Island N64", 'Kongo Jungle N64', 'Battlefield', 'Final Destination']
 
-console.log('| Slippi Cumulative Stats v1.7.2')
+console.log('| Slippi Cumulative Stats v1.8.0')
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
 console.log("| Script checks current folder and subfolders. Include opponent's info if you want more specific stats")
@@ -42,8 +42,8 @@ if (character_arg) {
     character_requested = checkCharacter(character_arg)
 }
 
-function checkCharacter(character_arg) {
-    user_character = character_arg.toLowerCase()
+function checkCharacter(character_param) {
+    user_character = character_param.toLowerCase()
     if (!characters_lowercase.includes(user_character)) {
         console.log(`${user_character} is not a valid character.`)
         readlineSync.question(`Valid characters: ${characters_lowercase.sort().join(', ')}`)
