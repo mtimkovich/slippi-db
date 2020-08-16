@@ -30,14 +30,27 @@ console.log('-------------------------------')
     
 const user_player = readlineSync.question('Enter your connect code (or nickname): ').toLowerCase()
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
-const character_arg = readlineSync.question("Enter your opponent's character (Optional. Leave blank for all matchups): ") || false
+const player_character_arg = readlineSync.question('NEW: Enter your character (Optional. Leave blank for all your characters): ') || false
+
+if (player_character_arg) {
+    player_character_requested = checkCharacter(player_character_arg)
+}
+
+const character_arg = readlineSync.question("Enter your opponent's character (Optional. Leave blank for all characters): ") || false
 
 if (character_arg) {
-    character_requested = character_arg.toLowerCase()
-    if (!characters_lowercase.includes(character_requested)) {
-        console.log(`${character_arg} is not a valid character. Valid characters:`)
-        readlineSync.question(`${characters_lowercase.sort().join(', ')}`)
+    character_requested = checkCharacter(character_arg)
+}
+
+function checkCharacter(character_arg) {
+    user_character = character_arg.toLowerCase()
+    if (!characters_lowercase.includes(user_character)) {
+        console.log(`${user_character} is not a valid character.`)
+        readlineSync.question(`Valid characters: ${characters_lowercase.sort().join(', ')}`)
         process.exit()
+    }
+    else {
+        return user_character
     }
 }
 
@@ -54,7 +67,6 @@ if (ignored_arg) {
 const files = glob.sync("**/*.slp");
 
 if (files.length == 0) {
-    // Use question to prevent automatic close
     readlineSync.question("No replays found. Script should be ran in the same folder or a parent folder of the replays.")
     process.exit()
 }
@@ -144,11 +156,11 @@ for (i = 0; i < files.length; i++) {
             continue
         }
         if (opponent_arg && !opponent_found) {
-            console.log(`${i}: User ${opponent_player} not found in replay. Ignoring results... (${files[i]})`)
+            console.log(`${i}: Opponent ${opponent_player} not found in replay. Ignoring results... (${files[i]})`)
             continue
         }
         if (ignored_arg && ignored_opponent_found) {
-            console.log(`${i}: User ${found_ignored_opponent} found in replay. Ignoring results... (${files[i]})`)
+            console.log(`${i}: Opponent ${found_ignored_opponent} found in replay. Ignoring results... (${files[i]})`)
             continue
         }
 
@@ -163,9 +175,15 @@ for (i = 0; i < files.length; i++) {
 
         stage_num = settings.stageId
 
+        if (player_character_arg && player_character.toLowerCase() !== player_character_requested) {
+            requested_player_character_num = characters_lowercase.indexOf(player_character_requested)
+            console.log(`${i}: User ${player_name} not playing ${characters[requested_player_character_num]}. (Found ${player_character}) Ignoring results... (${files[i]})`)
+            continue
+        }
+
         if (character_arg && opponent_character.toLowerCase() !== character_requested) {
             requested_character_num = characters_lowercase.indexOf(character_requested)
-            console.log(`${i}: ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results... (${files[i]})`)
+            console.log(`${i}: Opponent ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results... (${files[i]})`)
             continue
         }
 
@@ -243,10 +261,10 @@ for (i = 0; i < files.length; i++) {
 }
 
 if (!total_games) {
-    // Use question to prevent automatic close
     console.log('\n| No games found matching requested parameters.')
     console.log('-------------------------------')
     opponent_arg ? console.log(`| Players: ${user_player} vs ${opponent_arg}`) : console.log(`| Player: ${user_player}`)
+    if (player_character_arg) { console.log(`| Player character: ${characters[characters_lowercase.indexOf(player_character_requested)]}`) }
     if (character_arg) { console.log(`| Opponent character: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
     if (ignored_arg) { console.log(`| Ignored opponents: ${ignored_arg}`) }
     console.log('-------------------------------')
@@ -265,33 +283,35 @@ function secondsToHMS(seconds) {
 
 console.log('\n------- OVERALL RESULTS -------')
 opponent_arg ? console.log(`| ${final_player_name} (${real_player_code}) vs ${final_opponent_name} (${real_opponent_code})`) : console.log(`| ${final_player_name} (${real_player_code})`)
+if (player_character_arg) { console.log(`| Player character: ${characters[characters_lowercase.indexOf(player_character_requested)]}`) }
 if (character_arg) { console.log(`| Opponent character: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
 if (ignored_arg) { console.log(`| Ignored opponents: ${ignored_arg}`) }
 console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
 console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} including ${files.length - total_games} skipped replays`)
 
-console.log('------ CHARACTER RESULTS ------')
-character_results = []
-// Calculate character win rates
-for (i in character_totals) {
-    wins = character_wins[i] || 0
-    games = character_totals[i]
-    winrate = ((wins / games) * 100).toFixed(2) || 0
-    character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i]})
+if (!player_character_arg) {
+    console.log('------ CHARACTER RESULTS ------')
+    character_results = []
+    // Calculate character win rates
+    for (i in character_totals) {
+        wins = character_wins[i] || 0
+        games = character_totals[i]
+        winrate = ((wins / games) * 100).toFixed(2) || 0
+        character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i]})
+    }
+
+    // Sort character results list by games played in descending order
+    character_results.sort(function(a, b) {
+        return b.games - a.games
+    })
+
+    // Display character results
+    for (i = 0; i < character_results.length; i++) {
+        winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
+        playtime = secondsToHMS(character_results[i].playtime)
+        console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}%) - ${playtime}`)
+    }
 }
-
-// Sort character results list by games played in descending order
-character_results.sort(function(a, b) {
-    return b.games - a.games
-})
-
-// Display character results
-for (i = 0; i < character_results.length; i++) {
-    winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
-    playtime = secondsToHMS(character_results[i].playtime)
-    console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}%) - ${playtime}`)
-}
-
 console.log('-------- STAGE RESULTS --------')
 stage_results = []
 // Calculate stage win rates
@@ -349,5 +369,5 @@ if (!opponent_arg) {
     }
 }
 
-// Use question to prevent automatic close
+// readlineSync.question is used to prevent automatic closing of window
 readlineSync.question('-------------------------------')
