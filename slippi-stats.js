@@ -82,21 +82,21 @@ for (i = 0; i < files.length; i++) {
             total_seconds += game_seconds
         }
         catch(err) {
-            console.log(`${i}: Error reading replay metadata (${files[i]}). Ignoring results...`)
+            console.log(`${i}: Error reading replay metadata. Ignoring results... (${files[i]})`)
             continue
         }
         if (settings.players.length !== 2) {
-            console.log(`${i}: More than 2 players (${files[i]}). Ignoring results...`)
+            console.log(`${i}: More than 2 players. Ignoring results... (${files[i]})`)
             continue
         }
         try {
             if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
-                console.log(`${i}: Replay ${files[i]} is old or offline. (Missing player info) Ignoring results...`)
+                console.log(`${i}: Replay is old or offline. (Missing player info) Ignoring results... (${files[i]})`)
                 continue
             }
         }
         catch(err) {
-            console.log(`${i}: Replay ${files[i]} is corrupted. (Missing player info) Ignoring results...`)
+            console.log(`${i}: Replay is corrupted. (Missing player info) Ignoring results... (${files[i]})`)
             continue
         }
 
@@ -132,15 +132,15 @@ for (i = 0; i < files.length; i++) {
             }
         }
         if (player_num == 'none') {
-            console.log(`${i}: User ${user_player} not found in replay. Ignoring results...`)
+            console.log(`${i}: User ${user_player} not found in replay. Ignoring results... (${files[i]})`)
             continue
         }
         if (opponent_arg && !opponent_found) {
-            console.log(`${i}: User ${opponent_player} not found in replay. Ignoring results...`)
+            console.log(`${i}: User ${opponent_player} not found in replay. Ignoring results... (${files[i]})`)
             continue
         }
         if (ignored_arg && ignored_opponent_found) {
-            console.log(`${i}: User ${found_ignored_opponent} found in replay. Ignoring results...`)
+            console.log(`${i}: User ${found_ignored_opponent} found in replay. Ignoring results... (${files[i]})`)
             continue
         }
 
@@ -155,7 +155,7 @@ for (i = 0; i < files.length; i++) {
 
         if (character_arg && opponent_character.toLowerCase() !== character_requested) {
             requested_character_num = characters_lowercase.indexOf(character_requested)
-            console.log(`${i}: ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results...`)
+            console.log(`${i}: ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results... (${files[i]})`)
             continue
         }
 
@@ -167,7 +167,7 @@ for (i = 0; i < files.length; i++) {
 
         // Tie conditions
         if (game_seconds < 30 || (player_kills == 0 && opponent_kills == 0)) {
-            console.log(`${i}: Game lasted less than 30 seconds or no stocks were taken. Ignoring results...`)
+            console.log(`${i}: Game lasted less than 30 seconds or no stocks were taken. Ignoring results... (${files[i]})`)
             continue
         }
 
@@ -190,7 +190,7 @@ for (i = 0; i < files.length; i++) {
         // If the player didn't quit out AND has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
         // if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
         if (end_more_kills || end_lower_percent) {
-            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}!`)
+            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}! (${files[i]})`)
             total_wins++
             total_games++
             character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
@@ -201,7 +201,7 @@ for (i = 0; i < files.length; i++) {
             opponent_wins[opponent_code] = (opponent_wins[opponent_code] + 1) || 1
 
         } else {
-            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}.`)
+            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}. (${files[i]})`)
             total_games++
             character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
             nickname_totals[player_name] = (nickname_totals[player_name] + 1) || 1
@@ -226,7 +226,7 @@ for (i = 0; i < files.length; i++) {
 
     }
     catch(err) {
-        console.log(`${i}: Error reading replay (${files[i]}). Ignoring results...`)
+        console.log(`${i}: Error reading replay. Ignoring results... (${files[i]})`)
         continue
     }
 }
@@ -257,7 +257,7 @@ opponent_arg ? console.log(`| ${final_player_name} (${real_player_code}) vs ${fi
 if (character_arg) { console.log(`| Opponent character: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
 if (ignored_arg) { console.log(`| Ignored opponents: ${ignored_arg}`) }
 console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
-console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} total time spent in matches (including skipped replays)`)
+console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} including ${files.length - total_games} skipped replays`)
 
 console.log('------ CHARACTER RESULTS ------')
 character_results = []
