@@ -28,7 +28,7 @@ const stages = [null, null, 'Fountain of Dreams', 'Pokémon Stadium', "Princess 
                 'Mushroom Kingdom I', 'Mushroom Kingdom II', null, 'Venom', 'Poké Floats', 'Big Blue', 'Icicle Mountain',
                 'Icetop', 'Flat Zone', 'Dream Land N64', "Yoshi's Island N64", 'Kongo Jungle N64', 'Battlefield', 'Final Destination']
 
-console.log('| Slippi Cumulative Stats v1.8.0')
+console.log('| Slippi Cumulative Stats v' + statsVersion)
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
 console.log("| Script checks current folder and subfolders. Include opponent's info if you want more specific stats")
@@ -85,7 +85,7 @@ if (ignored_arg) {
     ignored_list = ignored_arg.toLowerCase().split(",")
 }
 
-const files = glob.sync("**/*.slp");
+const files = glob.sync("C:/Users/crdni/Documents/Slippi/tmp/*.slp");
 
 if (files.length == 0) {
     readlineSync.question("No replays found. Script should be ran in the same folder or a parent folder of the replays.")
