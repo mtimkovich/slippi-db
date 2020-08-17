@@ -1,14 +1,22 @@
-var glob = require("glob")
+const  glob = require("glob")
 const { default: SlippiGame } = require('@slippi/slippi-js')
-var readlineSync = require('readline-sync');
+const  readlineSync = require('readline-sync')
+const fs = require('fs');
+const pjson = require('./package.json')
+const jsonLock = require('./package-lock.json')
+const crypto = require('crypto')
+
+const statsVersion = pjson.version
+const slippiJsVersion = jsonLock.dependencies["@slippi/slippi-js"].version
+const cacheFilePath = "./cacheFile.json"
 
 // Characters ordered by ID
-var characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'Kirby', 'Bowser',
+const  characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'Kirby', 'Bowser',
             'Link', 'Luigi', 'Mario', 'Marth', 'Mewtwo', 'Ness', 'Peach', 'Pikachu',
             'Ice Climbers', 'Jigglypuff', 'Samus', 'Yoshi', 'Zelda', 'Sheik', 'Falco',
             'Young Link', 'Dr. Mario', 'Roy', 'Pichu', 'Ganondorf']
 
-var characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & watch', 'kirby', 'bowser',
+            const  characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & watch', 'kirby', 'bowser',
             'link', 'luigi', 'mario', 'marth', 'mewtwo', 'ness', 'peach', 'pikachu',
             'ice climbers', 'jigglypuff', 'samus', 'yoshi', 'zelda', 'sheik', 'falco',
             'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf']            
@@ -27,7 +35,7 @@ console.log("| Script checks current folder and subfolders. Include opponent's i
 console.log('| Note: Replays with no player data (pre-July 2020) are skipped (but counted in overall playtime)')
 console.log('| Note: Your answers are not case-sensitive')
 console.log('-------------------------------')
-    
+
 const user_player = readlineSync.question('Enter your connect code (or nickname): ').toLowerCase()
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
 const player_character_arg = readlineSync.question('NEW: Enter your character (Optional. Leave blank for all your characters): ') || false
@@ -40,6 +48,19 @@ const character_arg = readlineSync.question("Enter your opponent's character (Op
 
 if (character_arg) {
     character_requested = checkCharacter(character_arg)
+}
+
+function loadCache() {
+    try {
+        const contents = fs.readFileSync(cacheFilePath, 'utf8')
+        const data = JSON.parse(contents)
+        if (!data) { return }
+        if (data.statsVersion != statsVersion) { return }
+        if (data.slippiJsVersion != slippiJsVersion) { return }
+        return data.results
+    } catch {
+        return undefined
+    }
 }
 
 function checkCharacter(character_param) {
@@ -91,33 +112,56 @@ var final_player_name = user_player
 
 console.log(`${files.length} replays found.`)
 
-for (i = 0; i < files.length; i++) {
+const cache = loadCache()
+
+let hashedResults = {}
+files
+    .map((file, i) => { return processGame(file, i) })
+    .forEach((results) => {
+        processResults(results)
+        hashedResults[results.hash] = results
+    })
+
+fs.writeFileSync(cacheFilePath, JSON.stringify({
+    statsVersion,
+    slippiJsVersion,
+    results: hashedResults
+}))
+
+printResults()
+
+function processGame(file, i) {
+    const hash = crypto.createHash('md5').update(file).digest("hex")
+    if (!!cache && !!cache[hash]) {
+        return cache[hash]
+    }
+    let data = { hash }
     try {
-        const game = new SlippiGame(files[i])
+        const game = new SlippiGame(file)
         const settings = game.getSettings()
         const metadata = game.getMetadata()
         try {
             game_seconds = Math.floor(metadata.lastFrame / 60)
             game_length = Math.floor(game_seconds / 60) + ":" + (game_seconds % 60 ? (game_seconds % 60).toString().padStart(2, '0') : '00')
-            total_seconds += game_seconds
+            data.total_seconds = game_seconds
         }
         catch(err) {
-            console.log(`${i}: Error reading replay metadata. Ignoring results... (${files[i]})`)
-            continue
+            console.log(`${i}: Error reading replay metadata. Ignoring results... (${file})`)
+            return data
         }
         if (settings.players.length !== 2) {
-            console.log(`${i}: More than 2 players. Ignoring results... (${files[i]})`)
-            continue
+            console.log(`${i}: More than 2 players. Ignoring results... (${file})`)
+            return data
         }
         try {
             if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
-                console.log(`${i}: Replay is old or offline. (Missing player info) Ignoring results... (${files[i]})`)
-                continue
+                console.log(`${i}: Replay is old or offline. (Missing player info) Ignoring results... (${file})`)
+                return data
             }
         }
         catch(err) {
-            console.log(`${i}: Replay is corrupted. (Missing player info) Ignoring results... (${files[i]})`)
-            continue
+            console.log(`${i}: Replay is corrupted. (Missing player info) Ignoring results... (${file})`)
+            return data
         }
 
         player_num = 'none'
@@ -152,16 +196,16 @@ for (i = 0; i < files.length; i++) {
             }
         }
         if (player_num == 'none') {
-            console.log(`${i}: User ${user_player} not found in replay. Ignoring results... (${files[i]})`)
-            continue
+            console.log(`${i}: User ${user_player} not found in replay. Ignoring results... (${file})`)
+            return data
         }
         if (opponent_arg && !opponent_found) {
-            console.log(`${i}: Opponent ${opponent_player} not found in replay. Ignoring results... (${files[i]})`)
-            continue
+            console.log(`${i}: Opponent ${opponent_player} not found in replay. Ignoring results... (${file})`)
+            return data
         }
         if (ignored_arg && ignored_opponent_found) {
-            console.log(`${i}: Opponent ${found_ignored_opponent} found in replay. Ignoring results... (${files[i]})`)
-            continue
+            console.log(`${i}: Opponent ${found_ignored_opponent} found in replay. Ignoring results... (${file})`)
+            return data
         }
 
         player_character_num = player_characters[player_num]
@@ -177,14 +221,14 @@ for (i = 0; i < files.length; i++) {
 
         if (player_character_arg && player_character.toLowerCase() !== player_character_requested) {
             requested_player_character_num = characters_lowercase.indexOf(player_character_requested)
-            console.log(`${i}: User ${player_name} not playing ${characters[requested_player_character_num]}. (Found ${player_character}) Ignoring results... (${files[i]})`)
-            continue
+            console.log(`${i}: User ${player_name} not playing ${characters[requested_player_character_num]}. (Found ${player_character}) Ignoring results... (${file})`)
+            return data
         }
 
         if (character_arg && opponent_character.toLowerCase() !== character_requested) {
             requested_character_num = characters_lowercase.indexOf(character_requested)
-            console.log(`${i}: Opponent ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results... (${files[i]})`)
-            continue
+            console.log(`${i}: Opponent ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results... (${file})`)
+            return data
         }
 
         const stats = game.getStats()
@@ -194,8 +238,8 @@ for (i = 0; i < files.length; i++) {
 
         // Tie conditions
         if (game_seconds < 30 || (player_kills == 0 && opponent_kills == 0)) {
-            console.log(`${i}: Game lasted less than 30 seconds or no stocks were taken. Ignoring results... (${files[i]})`)
-            continue
+            console.log(`${i}: Game lasted less than 30 seconds or no stocks were taken. Ignoring results... (${file})`)
+            return data
         }
 
         player_final_percent = game.getLatestFrame().players[player_num].post.percent
@@ -217,157 +261,196 @@ for (i = 0; i < files.length; i++) {
         // If the player didn't quit out AND has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
         // if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
         if (end_more_kills || end_lower_percent) {
-            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}! (${files[i]})`)
-            total_wins++
-            total_games++
-            character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
-            character_wins[player_character_num] = (character_wins[player_character_num] + 1) || 1
-            nickname_totals[player_name] = (nickname_totals[player_name] + 1) || 1
-            nickname_wins[player_name] = (nickname_wins[player_name] + 1) || 1
-            opponent_totals[opponent_code] = (opponent_totals[opponent_code] + 1) || 1
-            opponent_wins[opponent_code] = (opponent_wins[opponent_code] + 1) || 1
-            stage_totals[stage_num] = (stage_totals[stage_num] + 1) || 1
-            stage_wins[stage_num] = (stage_wins[stage_num] + 1) || 1
+            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}! (${file})`)
+            data.total_wins = 1
         } else {
-            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}. (${files[i]})`)
-            total_games++
-            character_totals[player_character_num] = (character_totals[player_character_num] + 1) || 1
-            nickname_totals[player_name] = (nickname_totals[player_name] + 1) || 1
-            opponent_totals[opponent_code] = (opponent_totals[opponent_code] + 1) || 1
-            stage_totals[stage_num] = (stage_totals[stage_num] + 1) || 1
+            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}. (${file})`)
         }
+
+        data.total_games = 1
+        data.player_character_num = player_character_num
+        data.player_name = player_name
+        data.opponent_code = opponent_code
+        data.stage_num = settings.stageId
 
         // Try to find last used nickname and actual connect code to display at the end
         if (player_name.length > 0) {
-            final_player_name = player_name
+            data.final_player_name = player_name
         }
-        real_player_code = player_codes[player_num]
+        data.real_player_code = player_codes[player_num]
         if (opponent_arg && player_names[opponent_num]) {
             if (opponent_name.length > 0) {
-                final_opponent_name = opponent_name
+                data.final_opponent_name = opponent_name
             }
-            real_opponent_code = player_codes[opponent_num]
+            data.real_opponent_code = player_codes[opponent_num]
         }
-        counted_seconds += game_seconds
-        character_playtime[player_character_num] = (character_playtime[player_character_num] + game_seconds) || game_seconds
-        opponent_playtime[opponent_code] = (opponent_playtime[opponent_code] + game_seconds) || game_seconds
-        nickname_playtime[player_name] = (nickname_playtime[player_name] + game_seconds) || game_seconds
-        stage_playtime[stage_num] = (stage_playtime[stage_num] + game_seconds) || game_seconds
+        data.game_seconds = game_seconds
+        return data
     }
     catch(err) {
-        console.log(`${i}: Error reading replay. Ignoring results... (${files[i]})`)
-        continue
+        console.log(`${i}: Error reading replay. Ignoring results... (${file})`)
+        return data
     }
 }
 
-if (!total_games) {
-    console.log('\n| No games found matching requested parameters.')
-    console.log('-------------------------------')
-    opponent_arg ? console.log(`| Players: ${user_player} vs ${opponent_arg}`) : console.log(`| Player: ${user_player}`)
+function processResults(r) {
+    total_games += r.total_games || 0
+    total_wins += r.total_wins || 0
+    total_seconds += r.total_seconds || 0
+    counted_seconds += r.game_seconds || 0
+
+    // TODO only do this for the last one?
+    if (!!r.real_player_code) {
+        real_player_code = r.real_player_code
+    }
+    if (!!r.final_player_name) {
+        final_player_name = r.final_player_name
+    }
+    if (!!r.final_opponent_name) {
+        final_opponent_name = r.final_opponent_name
+    }
+    if (!!r.real_opponent_code) {
+        real_opponent_code = r.real_opponent_code
+    }
+    
+    if (!!r.player_character_num || r.player_character_num == 0) {
+        character_totals[r.player_character_num] = (character_totals[r.player_character_num] + 1) || 1
+        character_playtime[r.player_character_num] = (character_playtime[r.player_character_num] + r.game_seconds) || r.game_seconds
+    }
+
+    if (!!r.player_name) {
+        nickname_totals[r.player_name] = (nickname_totals[r.player_name] + 1) || 1
+        nickname_playtime[r.player_name] = (nickname_playtime[r.player_name] + r.game_seconds) || r.game_seconds
+    }
+
+    if (!!r.opponent_code) {
+        opponent_totals[r.opponent_code] = (opponent_totals[r.opponent_code] + 1) || 1
+        opponent_playtime[r.opponent_code] = (opponent_playtime[r.opponent_code] + r.game_seconds) || r.game_seconds
+    }
+
+    if (!!r.stage_num) {
+        stage_totals[r.stage_num] = (stage_totals[r.stage_num] + 1) || 1
+        stage_playtime[r.stage_num] = (stage_playtime[r.stage_num] + r.game_seconds) || r.game_seconds
+    }
+
+    if (r.total_wins == 1) {
+        character_wins[r.player_character_num] = (character_wins[r.player_character_num] + 1) || 1
+        nickname_wins[r.player_name] = (nickname_wins[r.player_name] + 1) || 1
+        opponent_wins[r.opponent_code] = (opponent_wins[r.opponent_code] + 1) || 1
+        stage_wins[r.stage_num] = (stage_wins[r.stage_num] + 1) || 1
+    }
+}
+
+function printResults() {
+    if (!total_games) {
+        console.log('\n| No games found matching requested parameters.')
+        console.log('-------------------------------')
+        opponent_arg ? console.log(`| Players: ${user_player} vs ${opponent_arg}`) : console.log(`| Player: ${user_player}`)
+        if (player_character_arg) { console.log(`| Player character: ${characters[characters_lowercase.indexOf(player_character_requested)]}`) }
+        if (character_arg) { console.log(`| Opponent character: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
+        if (ignored_arg) { console.log(`| Ignored opponents: ${ignored_arg}`) }
+        console.log('-------------------------------')
+        readlineSync.question(`| Try again with different parameters.`)
+        process.exit()
+    }
+
+    win_rate = (total_wins / total_games * 100).toFixed(2)
+
+    function secondsToHMS(seconds) {
+        const format = val => `0${Math.floor(val)}`.slice(-2)
+        const hours = seconds / 3600
+        const minutes = (seconds % 3600) / 60  
+        return [hours, minutes, seconds % 60].map(format).join(':')
+    }
+
+    console.log('\n------- OVERALL RESULTS -------')
+    opponent_arg ? console.log(`| ${final_player_name} (${real_player_code}) vs ${final_opponent_name} (${real_opponent_code})`) : console.log(`| ${final_player_name} (${real_player_code})`)
     if (player_character_arg) { console.log(`| Player character: ${characters[characters_lowercase.indexOf(player_character_requested)]}`) }
     if (character_arg) { console.log(`| Opponent character: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
     if (ignored_arg) { console.log(`| Ignored opponents: ${ignored_arg}`) }
-    console.log('-------------------------------')
-    readlineSync.question(`| Try again with different parameters.`)
-    process.exit()
-}
+    console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
+    console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} including ${files.length - total_games} skipped replays`)
 
-win_rate = (total_wins / total_games * 100).toFixed(2)
+    if (!player_character_arg) {
+        console.log('------ CHARACTER RESULTS ------')
+        character_results = []
+        // Calculate character win rates
+        for (i in character_totals) {
+            wins = character_wins[i] || 0
+            games = character_totals[i]
+            winrate = ((wins / games) * 100).toFixed(2) || 0
+            character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i]})
+        }
 
-function secondsToHMS(seconds) {
-    const format = val => `0${Math.floor(val)}`.slice(-2)
-    const hours = seconds / 3600
-    const minutes = (seconds % 3600) / 60  
-    return [hours, minutes, seconds % 60].map(format).join(':')
-}
+        // Sort character results list by games played in descending order
+        character_results.sort(function(a, b) {
+            return b.games - a.games
+        })
 
-console.log('\n------- OVERALL RESULTS -------')
-opponent_arg ? console.log(`| ${final_player_name} (${real_player_code}) vs ${final_opponent_name} (${real_opponent_code})`) : console.log(`| ${final_player_name} (${real_player_code})`)
-if (player_character_arg) { console.log(`| Player character: ${characters[characters_lowercase.indexOf(player_character_requested)]}`) }
-if (character_arg) { console.log(`| Opponent character: ${characters[characters_lowercase.indexOf(character_requested)]}`) }
-if (ignored_arg) { console.log(`| Ignored opponents: ${ignored_arg}`) }
-console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
-console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} including ${files.length - total_games} skipped replays`)
-
-if (!player_character_arg) {
-    console.log('------ CHARACTER RESULTS ------')
-    character_results = []
-    // Calculate character win rates
-    for (i in character_totals) {
-        wins = character_wins[i] || 0
-        games = character_totals[i]
+        // Display character results
+        for (i = 0; i < character_results.length; i++) {
+            winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
+            playtime = secondsToHMS(character_results[i].playtime)
+            console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}%) - ${playtime}`)
+        }
+    }
+    console.log('-------- STAGE RESULTS --------')
+    stage_results = []
+    // Calculate stage win rates
+    for (i in stage_totals) {
+        wins = stage_wins[i] || 0
+        games = stage_totals[i]
         winrate = ((wins / games) * 100).toFixed(2) || 0
-        character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i]})
+        stage_results.push({stage: stages[i], wins: wins || 0, games: games, playtime: stage_playtime[i]})
     }
 
-    // Sort character results list by games played in descending order
-    character_results.sort(function(a, b) {
+    // Sort stage results list by games played in descending order
+    stage_results.sort(function(a, b) {
         return b.games - a.games
     })
 
-    // Display character results
-    for (i = 0; i < character_results.length; i++) {
-        winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
-        playtime = secondsToHMS(character_results[i].playtime)
-        console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}%) - ${playtime}`)
+    // Display stage results
+    for (i = 0; i < stage_results.length; i++) {
+        winrate = ((stage_results[i].wins / stage_results[i].games) * 100).toFixed(2) || 0
+        playtime = secondsToHMS(stage_results[i].playtime)
+        console.log(`| ${stage_results[i].stage}: ${stage_results[i].wins} wins in ${stage_results[i].games} games (${winrate}%) - ${playtime}`)
     }
-}
-console.log('-------- STAGE RESULTS --------')
-stage_results = []
-// Calculate stage win rates
-for (i in stage_totals) {
-    wins = stage_wins[i] || 0
-    games = stage_totals[i]
-    winrate = ((wins / games) * 100).toFixed(2) || 0
-    stage_results.push({stage: stages[i], wins: wins || 0, games: games, playtime: stage_playtime[i]})
-}
 
-// Sort stage results list by games played in descending order
-stage_results.sort(function(a, b) {
-    return b.games - a.games
-})
-
-// Display stage results
-for (i = 0; i < stage_results.length; i++) {
-    winrate = ((stage_results[i].wins / stage_results[i].games) * 100).toFixed(2) || 0
-    playtime = secondsToHMS(stage_results[i].playtime)
-    console.log(`| ${stage_results[i].stage}: ${stage_results[i].wins} wins in ${stage_results[i].games} games (${winrate}%) - ${playtime}`)
-}
-
-console.log('------ NICKNAME RESULTS -------')
-// Calculate and display nickname win rates
-for (i in nickname_totals) {
-    wins = nickname_wins[i] || 0
-    games = nickname_totals[i]
-    winrate = ((wins / games) * 100).toFixed(2) || 0
-    playtime = secondsToHMS(nickname_playtime[i]) || '00:00:00'
-    console.log(`| ${i}: ${wins} wins in ${games} games (${winrate}%) - ${playtime}`)
-}
-
-if (!opponent_arg) {
-    console.log('-------- TOP OPPONENTS --------')
-    opponent_results = []
-    // Calculate opponent win rates
-    for (i in opponent_totals) {
-        wins = opponent_wins[i] || 0
-        games = opponent_totals[i]
+    console.log('------ NICKNAME RESULTS -------')
+    // Calculate and display nickname win rates
+    for (i in nickname_totals) {
+        wins = nickname_wins[i] || 0
+        games = nickname_totals[i]
         winrate = ((wins / games) * 100).toFixed(2) || 0
-        opponent_results.push({code: i, wins: wins || 0, games: games, playtime: opponent_playtime[i]})
+        playtime = secondsToHMS(nickname_playtime[i]) || '00:00:00'
+        console.log(`| ${i}: ${wins} wins in ${games} games (${winrate}%) - ${playtime}`)
     }
 
-    // Sort opponents results list by games played in descending order
-    opponent_results.sort(function(a, b) {
-        return b.games - a.games
-    })
+    if (!opponent_arg) {
+        console.log('-------- TOP OPPONENTS --------')
+        opponent_results = []
+        // Calculate opponent win rates
+        for (i in opponent_totals) {
+            wins = opponent_wins[i] || 0
+            games = opponent_totals[i]
+            winrate = ((wins / games) * 100).toFixed(2) || 0
+            opponent_results.push({code: i, wins: wins || 0, games: games, playtime: opponent_playtime[i]})
+        }
 
-    // Display opponent results (up to 10)
-    top_10 = opponent_results.slice(0,10)
-    for (i = 0; i < top_10.length; i++) {
-        winrate = ((top_10[i].wins / top_10[i].games) * 100).toFixed(2) || 0
-        playtime = secondsToHMS(top_10[i].playtime) || '00:00:00'
-        console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}%) - ${playtime}`)
+        // Sort opponents results list by games played in descending order
+        opponent_results.sort(function(a, b) {
+            return b.games - a.games
+        })
+
+        // Display opponent results (up to 10)
+        top_10 = opponent_results.slice(0,10)
+        for (i = 0; i < top_10.length; i++) {
+            winrate = ((top_10[i].wins / top_10[i].games) * 100).toFixed(2) || 0
+            playtime = secondsToHMS(top_10[i].playtime) || '00:00:00'
+            console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}%) - ${playtime}`)
+        }
     }
+
+    // readlineSync.question is used to prevent automatic closing of window
+    readlineSync.question('-------------------------------')
 }
-
-// readlineSync.question is used to prevent automatic closing of window
-readlineSync.question('-------------------------------')
