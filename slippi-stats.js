@@ -85,7 +85,7 @@ if (ignored_arg) {
     ignored_list = ignored_arg.toLowerCase().split(",")
 }
 
-const files = glob.sync("C:/Users/crdni/Documents/Slippi/tmp/*.slp");
+const files = glob.sync("**/*.slp");
 
 if (files.length == 0) {
     readlineSync.question("No replays found. Script should be ran in the same folder or a parent folder of the replays.")
