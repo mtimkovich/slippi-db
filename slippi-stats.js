@@ -1,6 +1,6 @@
-const  glob = require("glob")
+const glob = require("glob")
 const { default: SlippiGame } = require('@slippi/slippi-js')
-const  readlineSync = require('readline-sync')
+const readlineSync = require('readline-sync')
 const fs = require('fs');
 const pjson = require('./package.json')
 const jsonLock = require('./package-lock.json')
@@ -8,15 +8,15 @@ const crypto = require('crypto')
 
 const statsVersion = pjson.version
 const slippiJsVersion = jsonLock.dependencies["@slippi/slippi-js"].version
-const cacheFilePath = "./cacheFile.json"
+const cacheFilePath = "./replayCache.json"
 
 // Characters ordered by ID
-const  characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'Kirby', 'Bowser',
+const characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'Kirby', 'Bowser',
             'Link', 'Luigi', 'Mario', 'Marth', 'Mewtwo', 'Ness', 'Peach', 'Pikachu',
             'Ice Climbers', 'Jigglypuff', 'Samus', 'Yoshi', 'Zelda', 'Sheik', 'Falco',
             'Young Link', 'Dr. Mario', 'Roy', 'Pichu', 'Ganondorf']
 
-            const  characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & watch', 'kirby', 'bowser',
+const characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & watch', 'kirby', 'bowser',
             'link', 'luigi', 'mario', 'marth', 'mewtwo', 'ness', 'peach', 'pikachu',
             'ice climbers', 'jigglypuff', 'samus', 'yoshi', 'zelda', 'sheik', 'falco',
             'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf']            
@@ -54,12 +54,18 @@ function loadCache() {
     try {
         const contents = fs.readFileSync(cacheFilePath, 'utf8')
         const data = JSON.parse(contents)
-        if (!data) { return }
-        if (data.statsVersion != statsVersion) { return }
-        if (data.slippiJsVersion != slippiJsVersion) { return }
+        if (!data) {
+            console.log('No replays have been cached. All replays will be scanned. Please be patient...')
+            return 
+        }
+        // Don't have to worry about this yet I think. Best to not assume anything is broken until it is and try to work around it then
+        // if (data.statsVersion != statsVersion) { return }
+        // if (data.slippiJsVersion != slippiJsVersion) { return }
+        console.log(Object.keys(data.results).length + ' replays have been cached previously.')
         return data.results
     } catch {
-        return undefined
+        console.log('No cache file found. All replays will be scanned. Please be patient...')
+        return
     }
 }
 
@@ -141,6 +147,10 @@ function loadGameData(file, i) {
         const game = new SlippiGame(file)
         data.settings = game.getSettings()
         data.metadata = game.getMetadata()
+        if (JSON.stringify(data.metadata.players[0].names) === '{}' || JSON.stringify(data.metadata.players[1].names) === '{}') {
+            console.log(`${i}: Replay is old or offline. (Missing player info) Ignoring results... (${file})`)
+            return data
+        }
         data.stats = game.getStats().overall.map((o) => o.killCount)
         data.latestFramePercents = game.getLatestFrame().players.map((p) => p.post.percent)
         return data

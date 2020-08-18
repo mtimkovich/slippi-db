@@ -106,4 +106,4 @@ dist
 # Slippi replays
 test
 *.slp
-cacheFile.json
+replayCache.json
