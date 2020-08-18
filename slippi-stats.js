@@ -254,8 +254,8 @@ function processGame(file, i, gameData) {
             return data
         }
 
-        player_kills = stats[player_num].killCount
-        opponent_kills = stats[opponent_num].killCount
+        player_kills = stats[player_num]
+        opponent_kills = stats[opponent_num]
 
         // Tie conditions
         if (game_seconds < 30 || (player_kills == 0 && opponent_kills == 0)) {
