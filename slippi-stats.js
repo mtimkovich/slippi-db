@@ -294,16 +294,15 @@ function processGame(file, i, gameData) {
         data.opponent_code = opponent_code
         data.stage_num = settings.stageId
 
-        // Try to find last used nickname and actual connect code to display at the end
         if (player_name.length > 0) {
-            data.final_player_name = player_name
+            data.player_name = player_name
         }
-        data.real_player_code = player_codes[player_num]
+        data.player_code = player_codes[player_num]
         if (opponent_arg && player_names[opponent_num]) {
             if (opponent_name.length > 0) {
-                data.final_opponent_name = opponent_name
+                data.opponent_name = opponent_name
             }
-            data.real_opponent_code = player_codes[opponent_num]
+            data.opponent_code = player_codes[opponent_num]
         }
         data.game_seconds = game_seconds
         return data
@@ -320,18 +319,18 @@ function processResults(r) {
     total_seconds += r.total_seconds || 0
     counted_seconds += r.game_seconds || 0
 
-    // TODO only do this for the last one?
-    if (!!r.real_player_code) {
-        real_player_code = r.real_player_code
+// Try to find last used nickname and actual connect code to display at the end
+    if (!!r.player_code) {
+        real_player_code = r.player_code
     }
-    if (!!r.final_player_name) {
-        final_player_name = r.final_player_name
+    if (!!r.player_name) {
+        final_player_name = r.player_name
     }
-    if (!!r.final_opponent_name) {
-        final_opponent_name = r.final_opponent_name
+    if (!!r.opponent_name) {
+        final_opponent_name = r.opponent_name
     }
-    if (!!r.real_opponent_code) {
-        real_opponent_code = r.real_opponent_code
+    if (!!r.opponent_code) {
+        real_opponent_code = r.opponent_code
     }
     
     if (!!r.player_character_num || r.player_character_num == 0) {
