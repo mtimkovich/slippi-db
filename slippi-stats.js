@@ -31,9 +31,11 @@ const stages = [null, null, 'Fountain of Dreams', 'Pokémon Stadium', "Princess 
 console.log('| Slippi Cumulative Stats v' + statsVersion)
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
-console.log("| Script checks current folder and subfolders. Include opponent's info if you want more specific stats")
+console.log("| Script checks current folder and subfolders. Provide optional info if you want more specific stats")
 console.log('| Note: Replays with no player data (pre-July 2020) are skipped (but counted in overall playtime)')
 console.log('| Note: Your answers are not case-sensitive')
+console.log('-------------------------------')
+const cache = loadCache()
 console.log('-------------------------------')
 
 const user_player = readlineSync.question('Enter your connect code (or nickname): ').toLowerCase()
@@ -55,16 +57,16 @@ function loadCache() {
         const contents = fs.readFileSync(cacheFilePath, 'utf8')
         const data = JSON.parse(contents)
         if (!data) {
-            console.log('No replays have been cached. All replays will be scanned. Please be patient...')
+            console.log('| No replays cache found so all replays will be scanned. Future scans will be much faster.')
             return 
         }
         // Don't have to worry about this yet I think. Best to not assume anything is broken until it is and try to work around it then
         // if (data.statsVersion != statsVersion) { return }
         // if (data.slippiJsVersion != slippiJsVersion) { return }
-        console.log(Object.keys(data.results).length + ' replays have been cached previously.')
+        console.log('| ' + Object.keys(data.results).length + ' replays have been cached previously. Any new replays will be fully scanned and cached.')
         return data.results
     } catch {
-        console.log('No cache file found. All replays will be scanned. Please be patient...')
+        console.log('| No replay cache found so all replays will be scanned. Future scans will be much faster.')
         return
     }
 }
@@ -117,8 +119,6 @@ var stage_playtime = []
 var final_player_name = user_player
 
 console.log(`${files.length} replays found.`)
-
-const cache = loadCache()
 
 let hashedResults = {}
 files.forEach((file, i) => {
