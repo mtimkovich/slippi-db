@@ -115,12 +115,13 @@ console.log(`${files.length} replays found.`)
 const cache = loadCache()
 
 let hashedResults = {}
-files
-    .map((file, i) => { return processGame(file, i) })
-    .forEach((results) => {
-        processResults(results)
-        hashedResults[results.hash] = results
-    })
+files.forEach((file, i) => {
+    const gameData = loadGameData(file, i)
+    if (!gameData) { return }
+    hashedResults[gameData.hash] = gameData
+    const results = processGame(file, i, gameData)
+    processResults(results)
+})
 
 fs.writeFileSync(cacheFilePath, JSON.stringify({
     statsVersion,
@@ -130,7 +131,7 @@ fs.writeFileSync(cacheFilePath, JSON.stringify({
 
 printResults()
 
-function processGame(file, i) {
+function loadGameData(file, i) {
     const hash = crypto.createHash('md5').update(file).digest("hex")
     if (!!cache && !!cache[hash]) {
         return cache[hash]
@@ -138,8 +139,21 @@ function processGame(file, i) {
     let data = { hash }
     try {
         const game = new SlippiGame(file)
-        const settings = game.getSettings()
-        const metadata = game.getMetadata()
+        data.settings = game.getSettings()
+        data.metadata = game.getMetadata()
+        data.stats = game.getStats().overall.map((o) => o.killCount)
+        data.latestFramePercents = game.getLatestFrame().players.map((p) => p.post.percent)
+        return data
+    } catch {
+        console.log(`${i}: Error reading replay metadata. Ignoring results... (${file})`)
+        return
+    }
+}
+
+function processGame(file, i, gameData) {
+    const { settings, metadata, stats, latestFramePercents } = gameData
+    let data = {}
+    try {
         try {
             game_seconds = Math.floor(metadata.lastFrame / 60)
             game_length = Math.floor(game_seconds / 60) + ":" + (game_seconds % 60 ? (game_seconds % 60).toString().padStart(2, '0') : '00')
@@ -231,10 +245,8 @@ function processGame(file, i) {
             return data
         }
 
-        const stats = game.getStats()
-
-        player_kills = stats.overall[player_num].killCount
-        opponent_kills = stats.overall[opponent_num].killCount
+        player_kills = stats[player_num].killCount
+        opponent_kills = stats[opponent_num].killCount
 
         // Tie conditions
         if (game_seconds < 30 || (player_kills == 0 && opponent_kills == 0)) {
@@ -242,8 +254,8 @@ function processGame(file, i) {
             return data
         }
 
-        player_final_percent = game.getLatestFrame().players[player_num].post.percent
-        opponent_final_percent = game.getLatestFrame().players[opponent_num].post.percent
+        player_final_percent = latestFramePercents[player_num]
+        opponent_final_percent = latestFramePercents[opponent_num]
         end_more_kills = player_kills > opponent_kills
         end_lower_percent = (player_kills == opponent_kills) && player_final_percent < opponent_final_percent
 
