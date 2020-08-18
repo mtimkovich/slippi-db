@@ -40,7 +40,7 @@ console.log('-------------------------------')
 
 const user_player = readlineSync.question('Enter your connect code (or nickname): ').toLowerCase()
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
-const player_character_arg = readlineSync.question('NEW: Enter your character (Optional. Leave blank for all your characters): ') || false
+const player_character_arg = readlineSync.question('Enter your character (Optional. Leave blank for all your characters): ') || false
 
 if (player_character_arg) {
     player_character_requested = checkCharacter(player_character_arg)
@@ -148,7 +148,6 @@ function loadGameData(file, i) {
         data.settings = game.getSettings()
         data.metadata = game.getMetadata()
         if (JSON.stringify(data.metadata.players[0].names) === '{}' || JSON.stringify(data.metadata.players[1].names) === '{}') {
-            console.log(`${i}: Replay is old or offline. (Missing player info) Ignoring results... (${file})`)
             return data
         }
         data.stats = game.getStats().overall.map((o) => o.killCount)
