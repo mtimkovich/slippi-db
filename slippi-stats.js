@@ -117,6 +117,7 @@ var stage_totals = []
 var stage_wins = []
 var stage_playtime = []
 var final_player_name = user_player
+var new_replays = 0
 
 console.log(`${files.length} replays found.`)
 
@@ -147,11 +148,14 @@ function loadGameData(file, i) {
         const game = new SlippiGame(file)
         data.settings = game.getSettings()
         data.metadata = game.getMetadata()
+        // skips pre-July replays that have no player data
         if (JSON.stringify(data.metadata.players[0].names) === '{}' || JSON.stringify(data.metadata.players[1].names) === '{}') {
+            new_replays += 1
             return data
         }
         data.stats = game.getStats().overall.map((o) => o.killCount)
         data.latestFramePercents = game.getLatestFrame().players.map((p) => p.post.percent)
+        new_replays += 1
         return data
     } catch {
         console.log(`${i}: Error reading replay metadata. Ignoring results... (${file})`)
@@ -472,5 +476,6 @@ function printResults() {
     }
 
     // readlineSync.question is used to prevent automatic closing of window
-    readlineSync.question('-------------------------------')
+    console.log('-------------------------------')
+    readlineSync.question(`| Scan complete. ${new_replays} new replays have been added to ${cacheFilePath}.`)
 }
