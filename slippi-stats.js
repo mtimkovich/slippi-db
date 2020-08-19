@@ -2,6 +2,7 @@ const glob = require("glob")
 const { default: SlippiGame } = require('@slippi/slippi-js')
 const readlineSync = require('readline-sync')
 const fs = require('fs');
+const path = require('path')
 const pjson = require('./package.json')
 const jsonLock = require('./package-lock.json')
 const crypto = require('crypto')
@@ -139,7 +140,8 @@ fs.writeFileSync(cacheFilePath, JSON.stringify({
 printResults()
 
 function loadGameData(file, i) {
-    const hash = crypto.createHash('md5').update(file).digest("hex")
+    filename = path.basename(file)
+    const hash = crypto.createHash('md5').update(filename).digest("hex")
     if (!!cache && !!cache[hash]) {
         return cache[hash]
     }
