@@ -402,9 +402,9 @@ function printResults() {
             character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i]})
         }
 
-        // Sort character results list by games played in descending order
+        // Sort character results list by games won in descending order
         character_results.sort(function(a, b) {
-            return b.games - a.games
+            return b.wins - a.wins
         })
 
         // Display character results
@@ -424,9 +424,9 @@ function printResults() {
         stage_results.push({stage: stages[i], wins: wins || 0, games: games, playtime: stage_playtime[i]})
     }
 
-    // Sort stage results list by games played in descending order
+    // Sort stage results list by games won in descending order
     stage_results.sort(function(a, b) {
-        return b.games - a.games
+        return b.wins - a.wins
     })
 
     // Display stage results
