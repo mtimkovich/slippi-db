@@ -28,7 +28,7 @@ const stages = [null, null, 'Fountain of Dreams', 'Pokémon Stadium', "Princess 
                 'Mushroom Kingdom I', 'Mushroom Kingdom II', null, 'Venom', 'Poké Floats', 'Big Blue', 'Icicle Mountain',
                 'Icetop', 'Flat Zone', 'Dream Land N64', "Yoshi's Island N64", 'Kongo Jungle N64', 'Battlefield', 'Final Destination']
 
-console.log('| Slippi Cumulative Stats v' + statsVersion)
+console.log(`| \x1b[92mSlippi Cumulative Stats\x1b[0m v${statsVersion}`)
 console.log('-------------------------------')
 console.log('| Provides cumulative stats from Slippi replays')
 console.log("| Script checks current folder and subfolders. Provide optional info if you want more specific stats")
@@ -282,10 +282,10 @@ function processGame(file, i, gameData) {
         // If the player didn't quit out AND has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
         // if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
         if (end_more_kills || end_lower_percent) {
-            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) beat ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}! (${file})`)
+            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) \x1b[36mwon\x1b[0m vs ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}! (${file})`)
             data.total_wins = 1
         } else {
-            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) lost to ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}. (${file})`)
+            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) \x1b[31mlost\x1b[0m vs ${opponent_name || opponent_code} (${opponent_character}) in ${game_length}. (${file})`)
         }
 
         data.total_games = 1
