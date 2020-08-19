@@ -59,16 +59,16 @@ function loadCache() {
         const data = JSON.parse(contents)
         if (!data) {
             console.log('| No replays cache found so all replays will be scanned. Future scans will be much faster.')
-            return 
+            return {}
         }
         // Don't have to worry about this yet I think. Best to not assume anything is broken until it is and try to work around it then
-        // if (data.statsVersion != statsVersion) { return }
-        // if (data.slippiJsVersion != slippiJsVersion) { return }
+        // if (data.statsVersion != statsVersion) { return {} }
+        // if (data.slippiJsVersion != slippiJsVersion) { return {} }
         console.log('| ' + Object.keys(data.results).length + ' replays have been cached previously. Any new replays will be fully scanned and cached.')
         return data.results
     } catch {
         console.log('| No replay cache found so all replays will be scanned. Future scans will be much faster.')
-        return
+        return {}
     }
 }
 
@@ -122,11 +122,10 @@ var new_replays = 0
 
 console.log(`${files.length} replays found.`)
 
-let hashedResults = {}
 files.forEach((file, i) => {
     const gameData = loadGameData(file, i)
     if (!gameData) { return }
-    hashedResults[gameData.hash] = gameData
+    cache[gameData.hash] = gameData
     const results = processGame(file, i, gameData)
     processResults(results)
 })
@@ -134,7 +133,7 @@ files.forEach((file, i) => {
 fs.writeFileSync(cacheFilePath, JSON.stringify({
     statsVersion,
     slippiJsVersion,
-    results: hashedResults
+    results: cache
 }))
 
 printResults()
