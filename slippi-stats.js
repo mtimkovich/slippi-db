@@ -476,7 +476,8 @@ function printResults() {
         }
     }
 
-    // readlineSync.question is used to prevent automatic closing of window
     console.log('-------------------------------')
-    readlineSync.question(`| Scan complete. ${new_replays} new replays have been added to ${cacheFilePath}.`)
+    console.log(`| Scan complete. ${new_replays} new replays have been added to ${cacheFilePath}.`)
 }
+
+process.stdin.resume()
