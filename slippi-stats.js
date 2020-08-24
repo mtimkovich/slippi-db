@@ -87,7 +87,7 @@ function checkCharacter(character_param) {
 const ignored_arg = readlineSync.question("Enter any opponent's codes/names to skip, separated by a comma (Optional): ")
 
 if (opponent_arg) {
-    opponent_player = opponent_arg.toLowerCase()
+    opponent_player = opponent_arg.toLowerCase().trim()
 }
 
 if (ignored_arg) {
@@ -203,20 +203,20 @@ function processGame(file, i, gameData) {
 
         for (j = 0; j < settings.players.length; j++) {
             if (opponent_arg) {
-                if (player_names[j].toLowerCase() == opponent_player || player_codes[j].toLowerCase() == opponent_player) {
+                if (player_names[j].toLowerCase().trim() == opponent_player || player_codes[j].toLowerCase() == opponent_player) {
                     opponent_found = true
                 }
             }
             if (ignored_arg) {
                 for (k of ignored_list) {
-                    skipped_opponent = k.trim().toLowerCase()
-                    if (player_names[j].toLowerCase() == skipped_opponent || player_codes[j].toLowerCase() == skipped_opponent) {
+                    skipped_opponent = k.trim()
+                    if (player_names[j].toLowerCase().trim() == skipped_opponent || player_codes[j].toLowerCase() == skipped_opponent) {
                         ignored_opponent_found = true
                         found_ignored_opponent = `${player_names[j]} (${player_codes[j]})`
                     }
                 }
             }
-            if (player_names[j].toLowerCase() == user_player || player_codes[j].toLowerCase() == user_player) {
+            if (player_names[j].toLowerCase().trim() == user_player || player_codes[j].toLowerCase() == user_player) {
                 player_num = j
             }
             else {
@@ -484,4 +484,5 @@ function printResults() {
     console.log(`| Scan complete. ${new_replays} new replays have been added to ${cacheFilePath}.`)
 }
 
+// This prevents Enter from closing the program
 process.stdin.resume()
