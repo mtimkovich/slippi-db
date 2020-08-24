@@ -159,7 +159,7 @@ function loadGameData(file, i) {
         new_replays += 1
         return data
     } catch {
-        console.log(`${i}: Error reading replay metadata. Ignoring results... (${file})`)
+        console.log(`${i}: Error reading metadata. Ignoring... (${file})`)
         return
     }
 }
@@ -174,21 +174,21 @@ function processGame(file, i, gameData) {
             data.total_seconds = game_seconds
         }
         catch(err) {
-            console.log(`${i}: Error reading replay metadata. Ignoring results... (${file})`)
+            console.log(`${i}: Error reading metadata. Ignoring... (${file})`)
             return data
         }
         if (settings.players.length !== 2) {
-            console.log(`${i}: More than 2 players. Ignoring results... (${file})`)
+            console.log(`${i}: More than 2 players. Ignoring... (${file})`)
             return data
         }
         try {
             if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
-                console.log(`${i}: Replay is old or offline. (Missing player info) Ignoring results... (${file})`)
+                console.log(`${i}: Old or offline. Ignoring... (${file})`)
                 return data
             }
         }
         catch(err) {
-            console.log(`${i}: Replay is corrupted. (Missing player info) Ignoring results... (${file})`)
+            console.log(`${i}: Missing player info. Ignoring... (${file})`)
             return data
         }
 
@@ -224,15 +224,15 @@ function processGame(file, i, gameData) {
             }
         }
         if (player_num == 'none') {
-            console.log(`${i}: User ${user_player} not found in replay. Ignoring results... (${file})`)
+            console.log(`${i}: ${user_player} missing. Ignoring... (${file})`)
             return data
         }
         if (opponent_arg && !opponent_found) {
-            console.log(`${i}: Opponent ${opponent_player} not found in replay. Ignoring results... (${file})`)
+            console.log(`${i}: ${opponent_player} missing. Ignoring... (${file})`)
             return data
         }
         if (ignored_arg && ignored_opponent_found) {
-            console.log(`${i}: Opponent ${found_ignored_opponent} found in replay. Ignoring results... (${file})`)
+            console.log(`${i}: ${found_ignored_opponent} found. Ignoring... (${file})`)
             return data
         }
 
@@ -249,13 +249,13 @@ function processGame(file, i, gameData) {
 
         if (player_character_arg && player_character.toLowerCase() !== player_character_requested) {
             requested_player_character_num = characters_lowercase.indexOf(player_character_requested)
-            console.log(`${i}: User ${player_name} not playing ${characters[requested_player_character_num]}. (Found ${player_character}) Ignoring results... (${file})`)
+            console.log(`${i}: ${player_name} playing ${player_character}. Ignoring... (${file})`)
             return data
         }
 
         if (character_arg && opponent_character.toLowerCase() !== character_requested) {
             requested_character_num = characters_lowercase.indexOf(character_requested)
-            console.log(`${i}: Opponent ${opponent_name} not playing ${characters[requested_character_num]}. (Found ${opponent_character}) Ignoring results... (${file})`)
+            console.log(`${i}: ${opponent_name} playing ${opponent_character}. Ignoring... (${file})`)
             return data
         }
 
@@ -263,8 +263,12 @@ function processGame(file, i, gameData) {
         opponent_kills = stats[opponent_num]
 
         // Tie conditions
-        if (game_seconds < 30 || (player_kills == 0 && opponent_kills == 0)) {
-            console.log(`${i}: Game lasted less than 30 seconds or no stocks were taken. Ignoring results... (${file})`)
+        if (game_seconds < 30) {
+            console.log(`${i}: Match under 30 seconds. Ignoring... (${file})`)
+            return data
+        }
+        if (player_kills == 0 && opponent_kills == 0) {
+            console.log(`${i}: No stocks were taken. Ignoring... (${file})`)
             return data
         }
 
@@ -313,7 +317,7 @@ function processGame(file, i, gameData) {
         return data
     }
     catch(err) {
-        console.log(`${i}: Error reading replay. Ignoring results... (${file})`)
+        console.log(`${i}: Error reading replay. Ignoring... (${file})`)
         return data
     }
 }
