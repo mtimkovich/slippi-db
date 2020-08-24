@@ -159,7 +159,7 @@ function loadGameData(file, i) {
         new_replays += 1
         return data
     } catch {
-        console.log(`${i}: Error reading metadata. Ignoring... (${file})`)
+        console.log(`${i+1}: Error reading metadata. Ignoring... (${file})`)
         return
     }
 }
@@ -167,6 +167,7 @@ function loadGameData(file, i) {
 function processGame(file, i, gameData) {
     const { settings, metadata, stats, latestFramePercents } = gameData
     let data = {}
+    num = i+1
     try {
         try {
             game_seconds = Math.floor(metadata.lastFrame / 60)
@@ -174,21 +175,21 @@ function processGame(file, i, gameData) {
             data.total_seconds = game_seconds
         }
         catch(err) {
-            console.log(`${i}: Error reading metadata. Ignoring... (${file})`)
+            console.log(`${num}: Error reading metadata. Ignoring... (${file})`)
             return data
         }
         if (settings.players.length !== 2) {
-            console.log(`${i}: More than 2 players. Ignoring... (${file})`)
+            console.log(`${num}: More than 2 players. Ignoring... (${file})`)
             return data
         }
         try {
             if (JSON.stringify(metadata.players[0].names) === '{}' || JSON.stringify(metadata.players[1].names) === '{}') {
-                console.log(`${i}: Old or offline. Ignoring... (${file})`)
+                console.log(`${num}: Old or offline. Ignoring... (${file})`)
                 return data
             }
         }
         catch(err) {
-            console.log(`${i}: Missing player info. Ignoring... (${file})`)
+            console.log(`${num}: Missing player info. Ignoring... (${file})`)
             return data
         }
 
@@ -224,15 +225,15 @@ function processGame(file, i, gameData) {
             }
         }
         if (player_num == 'none') {
-            console.log(`${i}: ${user_player} missing. Ignoring... (${file})`)
+            console.log(`${num}: ${user_player} missing. Ignoring... (${file})`)
             return data
         }
         if (opponent_arg && !opponent_found) {
-            console.log(`${i}: ${opponent_player} missing. Ignoring... (${file})`)
+            console.log(`${num}: ${opponent_player} missing. Ignoring... (${file})`)
             return data
         }
         if (ignored_arg && ignored_opponent_found) {
-            console.log(`${i}: ${found_ignored_opponent} found. Ignoring... (${file})`)
+            console.log(`${num}: ${found_ignored_opponent} found. Ignoring... (${file})`)
             return data
         }
 
@@ -249,13 +250,13 @@ function processGame(file, i, gameData) {
 
         if (player_character_arg && player_character.toLowerCase() !== player_character_requested) {
             requested_player_character_num = characters_lowercase.indexOf(player_character_requested)
-            console.log(`${i}: ${player_name} playing ${player_character}. Ignoring... (${file})`)
+            console.log(`${num}: ${player_name} playing ${player_character}. Ignoring... (${file})`)
             return data
         }
 
         if (character_arg && opponent_character.toLowerCase() !== character_requested) {
             requested_character_num = characters_lowercase.indexOf(character_requested)
-            console.log(`${i}: ${opponent_name} playing ${opponent_character}. Ignoring... (${file})`)
+            console.log(`${num}: ${opponent_name} playing ${opponent_character}. Ignoring... (${file})`)
             return data
         }
 
@@ -264,11 +265,11 @@ function processGame(file, i, gameData) {
 
         // Tie conditions
         if (game_seconds < 30) {
-            console.log(`${i}: Match under 30 seconds. Ignoring... (${file})`)
+            console.log(`${num}: Match under 30 seconds. Ignoring... (${file})`)
             return data
         }
         if (player_kills == 0 && opponent_kills == 0) {
-            console.log(`${i}: No stocks were taken. Ignoring... (${file})`)
+            console.log(`${num}: No stocks were taken. Ignoring... (${file})`)
             return data
         }
 
@@ -291,10 +292,10 @@ function processGame(file, i, gameData) {
         // If the player didn't quit out AND has more kills than the opponent, the same but with a lower percent, or the opponent quits out: it's a win, otherwise it's a loss. Ties handled above
         // if (!end_player_LRAS && (end_more_kills || end_lower_percent || end_opponent_LRAS)) {
         if (end_more_kills || end_lower_percent) {
-            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) \x1b[36mwon\x1b[0m vs ${opponent_name || opponent_code} (${opponent_character}) on ${stages[stage_num]} in ${game_length}! (${file})`)
+            console.log(`${num}: ${player_name || player_codes[player_num]} (${player_character}) \x1b[36mwon\x1b[0m vs ${opponent_name || opponent_code} (${opponent_character}) on ${stages[stage_num]} in ${game_length}! (${file})`)
             data.total_wins = 1
         } else {
-            console.log(`${i}: ${player_name || player_codes[player_num]} (${player_character}) \x1b[31mlost\x1b[0m vs ${opponent_name || opponent_code} (${opponent_character}) on ${stages[stage_num]} in ${game_length}. (${file})`)
+            console.log(`${num}: ${player_name || player_codes[player_num]} (${player_character}) \x1b[31mlost\x1b[0m vs ${opponent_name || opponent_code} (${opponent_character}) on ${stages[stage_num]} in ${game_length}. (${file})`)
         }
 
         data.total_games = 1
@@ -317,7 +318,7 @@ function processGame(file, i, gameData) {
         return data
     }
     catch(err) {
-        console.log(`${i}: Error reading replay. Ignoring... (${file})`)
+        console.log(`${num}: Error reading replay. Ignoring... (${file})`)
         return data
     }
 }
