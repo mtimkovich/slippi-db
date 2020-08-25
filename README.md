@@ -1,6 +1,6 @@
 # Slippi Cumulative Stats
 
-A script using [slippi-js](https://github.com/project-slippi/slippi-js) to calculate your overall and head to head play times and win rates from replays. Results are shown per character, stage, and nickname as well. You can specify your opponent, your opponent's character, and even opponents to skip.
+A script using [slippi-js](https://github.com/project-slippi/slippi-js) to calculate your overall and head to head win rates and play times from replays. Results are shown per character, stage, and nickname as well. You can specify your character, your opponent, your opponent's character, and even opponents to skip.
 
 ## Instructions
 Tested on Windows.
@@ -9,7 +9,7 @@ Tested on Windows.
 2. Run slippi-cumulative-stats-win.exe
 3. Enter your codes/nicknames as prompted. (Connect codes are more reliable)
 
-Note: Replays are by default saved in `Documents/Slippi` but replays created before Jun 30, 2020 may be in your Dolphin folder.
+Note: By default, replays are saved in `Documents/Slippi` but replays created before Jun 30, 2020 may be in your Dolphin folder.
 
 ## Example
 
@@ -25,7 +25,7 @@ Otherwise, it's considered a loss. Win conditions are ignored and a loss is coun
 *LRA-Start detection is currently disabled due to inaccurate results. If someone quits, current stocks and percents are used. 
 
 ## Run from source
-Requires Node.js and npm.
+Requires Node.js.
 
 1. Place slippi-stats.js and package.json in a folder with replays
 2. Open a command line in the directory and run `npm install`
