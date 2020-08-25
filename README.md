@@ -13,7 +13,7 @@ Note: By default, replays are saved in `Documents/Slippi` but replays created be
 
 ## Example
 
-![Example results](https://i.imgur.com/qLSgNxL.png)
+![Example results](https://i.imgur.com/aA0NOJS.png)
 
 ## Win conditions
 * You finished with more stocks than your opponent
