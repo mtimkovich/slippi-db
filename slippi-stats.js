@@ -40,7 +40,7 @@ const cache = loadCache()
 console.log('-------------------------------')
 
 if (!!cache.user_player_arg) {
-    user_player_arg = readlineSync.question(`Enter your connect code or nickname (Leave blank for ${cache.user_player_arg}): `, {defaultInput: cache.user_player})
+    user_player_arg = readlineSync.question(`Enter your connect code or nickname (Leave blank for ${cache.user_player_arg}): `, {defaultInput: cache.user_player_arg})
     user_player = user_player_arg.toLowerCase()
 }
 else {
