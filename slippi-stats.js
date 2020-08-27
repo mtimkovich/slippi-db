@@ -39,11 +39,13 @@ console.log('-------------------------------')
 const cache = loadCache()
 console.log('-------------------------------')
 
-if (!!cache.user_player) {
-    user_player = readlineSync.question(`Enter your connect code or nickname (Leave blank for ${cache.user_player}): `, {defaultInput: cache.user_player}).toLowerCase()
+if (!!cache.user_player_arg) {
+    user_player_arg = readlineSync.question(`Enter your connect code or nickname (Leave blank for ${cache.user_player_arg}): `, {defaultInput: cache.user_player})
+    user_player = user_player_arg.toLowerCase()
 }
 else {
-    user_player = readlineSync.question('Enter your connect code or nickname (Will be stored for next use): ').toLowerCase()
+    user_player_arg = readlineSync.question('Enter your connect code or nickname (Will be stored for next use): ')
+    user_player = user_player_arg.toLowerCase()
 }
 
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
@@ -139,7 +141,7 @@ files.forEach((file, i) => {
 fs.writeFileSync(cacheFilePath, JSON.stringify({
     statsVersion,
     slippiJsVersion,
-    user_player,
+    user_player_arg,
     results: cache.results
 }))
 
