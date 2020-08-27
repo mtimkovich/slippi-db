@@ -39,7 +39,13 @@ console.log('-------------------------------')
 const cache = loadCache()
 console.log('-------------------------------')
 
-const user_player = readlineSync.question('Enter your connect code (or nickname): ').toLowerCase()
+if (!!cache.user_player) {
+    user_player = readlineSync.question(`Enter your connect code or nickname (Leave blank for ${cache.user_player}): `, {defaultInput: cache.user_player}).toLowerCase()
+}
+else {
+    user_player = readlineSync.question('Enter your connect code or nickname (Will be stored for next use): ').toLowerCase()
+}
+
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
 const player_character_arg = readlineSync.question('Enter your character (Optional. Leave blank for all your characters): ') || false
 
@@ -59,16 +65,16 @@ function loadCache() {
         const data = JSON.parse(contents)
         if (!data) {
             console.log('| No replays cache found so all replays will be scanned. Future scans will be much faster.')
-            return {}
+            return {results: {}}
         }
         // Don't have to worry about this yet I think. Best to not assume anything is broken until it is and try to work around it then
         // if (data.statsVersion != statsVersion) { return {} }
         // if (data.slippiJsVersion != slippiJsVersion) { return {} }
         console.log('| ' + Object.keys(data.results).length + ' replays have been cached previously. Any new replays will be fully scanned and cached.')
-        return data.results
+        return data
     } catch {
         console.log('| No replay cache found so all replays will be scanned. Future scans will be much faster.')
-        return {}
+        return {results: {}}
     }
 }
 
@@ -125,7 +131,7 @@ console.log(`${files.length} replays found.`)
 files.forEach((file, i) => {
     const gameData = loadGameData(file, i)
     if (!gameData) { return }
-    cache[gameData.hash] = gameData
+    cache.results[gameData.hash] = gameData
     const results = processGame(file, i, gameData)
     processResults(results)
 })
@@ -133,7 +139,8 @@ files.forEach((file, i) => {
 fs.writeFileSync(cacheFilePath, JSON.stringify({
     statsVersion,
     slippiJsVersion,
-    results: cache
+    user_player,
+    results: cache.results
 }))
 
 printResults()
@@ -141,8 +148,8 @@ printResults()
 function loadGameData(file, i) {
     filename = path.basename(file)
     const hash = crypto.createHash('md5').update(filename).digest("hex")
-    if (!!cache && !!cache[hash]) {
-        return cache[hash]
+    if (!!cache && !!cache.results[hash]) {
+        return cache.results[hash]
     }
     let data = { hash }
     try {
