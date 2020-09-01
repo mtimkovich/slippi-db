@@ -488,6 +488,26 @@ function printResults() {
             playtime = secondsToHMS(top_10[i].playtime) || '00:00:00'
             console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}%) - ${playtime}`)
         }
+
+        console.log('\n------ OPPONENT RESULTS -------')
+
+        let winningRecords = 0, losingRecords = 0, tiedRecords = 0
+        for (i = 0; i < opponent_results.length; i++) {
+            const result = opponent_results[i]
+            const loses = result.games - result.wins
+            const { wins } = result
+            if (wins > loses) {
+                winningRecords++
+            } else if (loses > wins) {
+                losingRecords++
+            } else {
+                tiedRecords++
+            }
+        }
+        console.log('You have a:')
+        console.log(`Winning record against ${winningRecords} opponents`)
+        console.log(`Losing record against ${losingRecords} opponents`)
+        console.log(`Even record against ${tiedRecords} opponents`)
     }
 
     console.log('-------------------------------')
