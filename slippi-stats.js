@@ -505,11 +505,11 @@ function printResults() {
             }
         }
         winPercent = ((winningRecords / opponent_results.length) * 100).toFixed(2) || 0
-        console.log(`| Winning record against ${winningRecords} opponents (${winPercent})`)
+        console.log(`| Winning record against ${winningRecords} opponents (${winPercent}%)`)
         losePercent = ((losingRecords / opponent_results.length) * 100).toFixed(2) || 0
-        console.log(`| Losing record against ${losingRecords} opponents (${losePercent})`)
+        console.log(`| Losing record against ${losingRecords} opponents (${losePercent}%)`)
         evenPercent = ((evenRecords / opponent_results.length) * 100).toFixed(2) || 0
-        console.log(`| Even record against ${evenRecords} opponents (${evenPercent})`)
+        console.log(`| Even record against ${evenRecords} opponents (${evenPercent}%)`)
     }
 
     console.log('-------------------------------')
