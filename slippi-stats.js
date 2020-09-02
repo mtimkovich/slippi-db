@@ -489,9 +489,9 @@ function printResults() {
             console.log(`| ${top_10[i].code}: ${top_10[i].wins} wins in ${top_10[i].games} games (${winrate}%) - ${playtime}`)
         }
 
-        console.log('\n------ OPPONENT RESULTS -------')
+        console.log('------ OPPONENT RESULTS -------')
 
-        let winningRecords = 0, losingRecords = 0, tiedRecords = 0
+        let winningRecords = 0, losingRecords = 0, evenRecords = 0
         for (i = 0; i < opponent_results.length; i++) {
             const result = opponent_results[i]
             const loses = result.games - result.wins
@@ -501,13 +501,15 @@ function printResults() {
             } else if (loses > wins) {
                 losingRecords++
             } else {
-                tiedRecords++
+                evenRecords++
             }
         }
-        console.log('You have a:')
-        console.log(`Winning record against ${winningRecords} opponents`)
-        console.log(`Losing record against ${losingRecords} opponents`)
-        console.log(`Even record against ${tiedRecords} opponents`)
+        winPercent = ((winningRecords / opponent_results.length) * 100).toFixed(2) || 0
+        console.log(`| Winning record against ${winningRecords} opponents (${winPercent})`)
+        losePercent = ((losingRecords / opponent_results.length) * 100).toFixed(2) || 0
+        console.log(`| Losing record against ${losingRecords} opponents (${losePercent})`)
+        evenPercent = ((evenRecords / opponent_results.length) * 100).toFixed(2) || 0
+        console.log(`| Even record against ${evenRecords} opponents (${evenPercent})`)
     }
 
     console.log('-------------------------------')
