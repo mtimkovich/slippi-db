@@ -31,7 +31,6 @@ const stages = [null, null, 'Fountain of Dreams', 'Pokémon Stadium', "Princess 
 
 console.log(`| \x1b[92mSlippi Cumulative Stats\x1b[0m v${statsVersion}`)
 console.log('-------------------------------')
-console.log('| Provides cumulative stats from Slippi replays')
 console.log("| Script checks current folder and subfolders. Provide optional info if you want more specific stats")
 console.log('| Note: Replays with no player data (pre-July 2020) are skipped (but counted in overall playtime)')
 console.log('| Note: Your answers are not case-sensitive')
@@ -494,11 +493,11 @@ function printResults() {
         let winningRecords = 0, losingRecords = 0, evenRecords = 0
         for (i = 0; i < opponent_results.length; i++) {
             const result = opponent_results[i]
-            const loses = result.games - result.wins
+            const losses = result.games - result.wins
             const { wins } = result
-            if (wins > loses) {
+            if (wins > losses) {
                 winningRecords++
-            } else if (loses > wins) {
+            } else if (losses > wins) {
                 losingRecords++
             } else {
                 evenRecords++
