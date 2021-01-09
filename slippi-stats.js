@@ -114,6 +114,7 @@ var total_seconds = 0
 var counted_seconds = 0
 var character_totals = []
 var character_wins = [] 
+var character_head_to_head = Array(26).fill().map(() => Array(26).fill().map((e, i) => [0, 0, characters[i]]));
 var character_playtime = []
 var nickname_totals = []
 var nickname_wins = []
@@ -309,6 +310,7 @@ function processGame(file, i, gameData) {
         data.total_games = 1
         data.player_character_num = player_character_num
         data.player_name = player_name
+        data.opponent_character_num = opponent_character_num
         data.opponent_code = opponent_code
         data.stage_num = settings.stageId
 
@@ -371,11 +373,19 @@ function processResults(r) {
         stage_playtime[r.stage_num] = (stage_playtime[r.stage_num] + r.game_seconds) || r.game_seconds
     }
 
+    // If the player won the game
     if (r.total_wins == 1) {
         character_wins[r.player_character_num] = (character_wins[r.player_character_num] + 1) || 1
+        character_head_to_head[r.player_character_num][r.opponent_character_num][2] = characters[r.opponent_character_num];
+        character_head_to_head[r.player_character_num][r.opponent_character_num][0] = (character_head_to_head[r.player_character_num][r.opponent_character_num][0] + 1)
         nickname_wins[r.player_name] = (nickname_wins[r.player_name] + 1) || 1
         opponent_wins[r.opponent_code] = (opponent_wins[r.opponent_code] + 1) || 1
         stage_wins[r.stage_num] = (stage_wins[r.stage_num] + 1) || 1
+    }
+    // Else if the player lost the game and it wasn't filtered
+    else if (!!r.total_games) {
+        character_head_to_head[r.player_character_num][r.opponent_character_num][2] = characters[r.opponent_character_num];
+        character_head_to_head[r.player_character_num][r.opponent_character_num][1] = (character_head_to_head[r.player_character_num][r.opponent_character_num][1] + 1)
     }
 }
 
@@ -417,7 +427,11 @@ function printResults() {
             wins = character_wins[i] || 0
             games = character_totals[i]
             winrate = ((wins / games) * 100).toFixed(2) || 0
-            character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i]})
+
+            // Sort head-to-head results by games won in descending order
+            character_head_to_head[i].sort((a,b) => b[0] - a[0]);
+
+            character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i], head_to_head: character_head_to_head[i]})
         }
 
         // Sort character results list by games won in descending order
@@ -430,6 +444,17 @@ function printResults() {
             winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
             playtime = secondsToHMS(character_results[i].playtime)
             console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}%) - ${playtime}`)
+
+            for (j in character_results[i].head_to_head) {
+                h2h_wins = character_results[i].head_to_head[j][0];
+                h2h_losses = character_results[i].head_to_head[j][1];
+                h2h_total = h2h_wins + h2h_losses;
+                h2h_winrate = ((h2h_wins / h2h_total) * 100).toFixed(2);
+
+                if (h2h_total > 0) {
+                    console.log(`| -- vs. ${character_results[i].head_to_head[j][2]} - ${h2h_wins} wins in ${h2h_total} games (${h2h_winrate}%)`);
+                }
+            }
         }
     }
     console.log('-------- STAGE RESULTS --------')
