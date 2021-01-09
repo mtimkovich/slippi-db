@@ -395,7 +395,7 @@ function printResults() {
     win_rate = (total_wins / total_games * 100).toFixed(2)
 
     function secondsToHMS(seconds) {
-        const format = val => `0${Math.floor(val)}`.slice(-2)
+        const format = val => `0${Math.floor(val)}`.replace(/^0+(\d\d)/, '$1')
         const hours = seconds / 3600
         const minutes = (seconds % 3600) / 60  
         return [hours, minutes, seconds % 60].map(format).join(':')
