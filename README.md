@@ -11,7 +11,7 @@ Note: On Windows, replays created before Jun 30, 2020 may be in your FM-Slippi f
 
 ## Example
 
-![Example results](https://i.imgur.com/KVytImn.png)
+![Example results](https://i.imgur.com/NWD7WbK.png)
 
 ## Win conditions
 * Your opponent lost more stocks than you **or**
