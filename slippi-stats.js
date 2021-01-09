@@ -15,12 +15,14 @@ const cacheFilePath = "./replayCache.json"
 const characters = ['Captain Falcon', 'Donkey Kong', 'Fox', 'Mr. Game & Watch', 'Kirby', 'Bowser',
             'Link', 'Luigi', 'Mario', 'Marth', 'Mewtwo', 'Ness', 'Peach', 'Pikachu',
             'Ice Climbers', 'Jigglypuff', 'Samus', 'Yoshi', 'Zelda', 'Sheik', 'Falco',
-            'Young Link', 'Dr. Mario', 'Roy', 'Pichu', 'Ganondorf']
+            'Young Link', 'Dr. Mario', 'Roy', 'Pichu', 'Ganondorf', 'Master Hand', 'Male Wireframe',
+            'Female Wireframe', 'Giga Bowser', 'Crazy Hand', 'Sandbag', 'Popo', 'Unknown']
 
 const characters_lowercase = ['captain falcon', 'donkey kong', 'fox', 'mr. game & watch', 'kirby', 'bowser',
             'link', 'luigi', 'mario', 'marth', 'mewtwo', 'ness', 'peach', 'pikachu',
             'ice climbers', 'jigglypuff', 'samus', 'yoshi', 'zelda', 'sheik', 'falco',
-            'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf']            
+            'young link', 'dr. mario', 'roy', 'pichu', 'ganondorf', 'master hand', 'male wireframe',
+            'female wireframe', 'giga bowser', 'crazy hand', 'sandbag', 'popo', 'Unknown']            
 
 // Stages ordered by ID
 const stages = [null, null, 'Fountain of Dreams', 'Pokémon Stadium', "Princess Peach's Castle", 'Kongo Jungle',
@@ -87,7 +89,7 @@ function checkCharacter(character_param) {
     user_character = character_param.toLowerCase()
     if (!characters_lowercase.includes(user_character)) {
         console.log(`${user_character} is not a valid character.`)
-        readlineSync.question(`Valid characters: ${characters_lowercase.sort().join(', ')}`)
+        readlineSync.question(`Valid characters: ${characters_lowercase.slice(0,26).sort().join(', ')}`)
         process.exit()
     }
     else {
@@ -118,7 +120,7 @@ var total_seconds = 0
 var counted_seconds = 0
 var character_totals = []
 var character_wins = [] 
-var character_head_to_head = Array(26).fill().map(() => Array(26).fill().map((e, i) => [0, 0, characters[i]]));
+var character_head_to_head = Array(34).fill().map(() => Array(34).fill().map((e, i) => [0, 0, characters[i]]));
 var character_playtime = []
 var nickname_totals = []
 var nickname_wins = []
