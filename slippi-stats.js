@@ -46,6 +46,10 @@ else {
     user_player_arg = readlineSync.question('Enter your connect code or nickname (Will be stored for next use): ')
     user_player = user_player_arg.toLowerCase()
 }
+if (!user_player) {
+    readlineSync.question(`You must enter a connect code (ex. ZIMP#721) or a nickname. Connect codes are preferred.`)
+    process.exit()
+}
 
 const opponent_arg = readlineSync.question("Enter your opponent's code or nickname (Optional. Leave blank for all opponents): ") || false
 const player_character_arg = readlineSync.question('Enter your character (Optional. Leave blank for all your characters): ') || false
