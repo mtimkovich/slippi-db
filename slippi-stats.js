@@ -167,6 +167,11 @@ function loadGameData(file, i) {
             new_replays += 1
             return data
         }
+        // earlier doubles check
+        if (data.settings.players.length > 2) {
+            new_replays += 1
+            return data
+        }
         data.stats = game.getStats().overall.map((o) => o.killCount)
         data.latestFramePercents = game.getLatestFrame().players.map((p) => p.post.percent)
         new_replays += 1
@@ -540,7 +545,7 @@ function printResults() {
             }
         }
     }
-    
+
     console.log('-------------------------------')
     console.log(`| Scan complete. ${new_replays} new replays have been added to ${cacheFilePath}.`)
 }
