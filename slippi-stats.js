@@ -419,44 +419,6 @@ function printResults() {
     console.log(`| ${total_wins} wins in ${total_games} games (${win_rate}% win rate)`)
     console.log(`| ${secondsToHMS(counted_seconds)} in analyzed matches. ${secondsToHMS(total_seconds)} including ${files.length - total_games} skipped replays`)
 
-    if (!player_character_arg) {
-        console.log('------ CHARACTER RESULTS ------')
-        character_results = []
-        // Calculate character win rates
-        for (i in character_totals) {
-            wins = character_wins[i] || 0
-            games = character_totals[i]
-            winrate = ((wins / games) * 100).toFixed(2) || 0
-
-            // Sort head-to-head results by games won in descending order
-            character_head_to_head[i].sort((a,b) => b[0] - a[0]);
-
-            character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i], head_to_head: character_head_to_head[i]})
-        }
-
-        // Sort character results list by games won in descending order
-        character_results.sort(function(a, b) {
-            return b.wins - a.wins
-        })
-
-        // Display character results
-        for (i = 0; i < character_results.length; i++) {
-            winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
-            playtime = secondsToHMS(character_results[i].playtime)
-            console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}%) - ${playtime}`)
-
-            for (j in character_results[i].head_to_head) {
-                h2h_wins = character_results[i].head_to_head[j][0];
-                h2h_losses = character_results[i].head_to_head[j][1];
-                h2h_total = h2h_wins + h2h_losses;
-                h2h_winrate = ((h2h_wins / h2h_total) * 100).toFixed(2);
-
-                if (h2h_total > 0) {
-                    console.log(`| -- vs. ${character_results[i].head_to_head[j][2]} - ${h2h_wins} wins in ${h2h_total} games (${h2h_winrate}%)`);
-                }
-            }
-        }
-    }
     console.log('-------- STAGE RESULTS --------')
     stage_results = []
     // Calculate stage win rates
@@ -536,6 +498,45 @@ function printResults() {
         console.log(`| Even record against ${evenRecords} opponents (${evenPercent}%)`)
     }
 
+    if (!player_character_arg) {
+        console.log('------ CHARACTER RESULTS ------')
+        character_results = []
+        // Calculate character win rates
+        for (i in character_totals) {
+            wins = character_wins[i] || 0
+            games = character_totals[i]
+            winrate = ((wins / games) * 100).toFixed(2) || 0
+
+            // Sort head-to-head results by games won in descending order
+            character_head_to_head[i].sort((a,b) => b[0] - a[0]);
+
+            character_results.push({character: characters[i], wins: wins || 0, games: games, playtime: character_playtime[i], head_to_head: character_head_to_head[i]})
+        }
+
+        // Sort character results list by games won in descending order
+        character_results.sort(function(a, b) {
+            return b.wins - a.wins
+        })
+
+        // Display character results
+        for (i = 0; i < character_results.length; i++) {
+            winrate = ((character_results[i].wins / character_results[i].games) * 100).toFixed(2) || 0
+            playtime = secondsToHMS(character_results[i].playtime)
+            console.log(`| ${character_results[i].character}: ${character_results[i].wins} wins in ${character_results[i].games} games (${winrate}%) - ${playtime}`)
+
+            for (j in character_results[i].head_to_head) {
+                h2h_wins = character_results[i].head_to_head[j][0];
+                h2h_losses = character_results[i].head_to_head[j][1];
+                h2h_total = h2h_wins + h2h_losses;
+                h2h_winrate = ((h2h_wins / h2h_total) * 100).toFixed(2);
+
+                if (h2h_total > 0) {
+                    console.log(`| -- vs. ${character_results[i].head_to_head[j][2]} - ${h2h_wins} wins in ${h2h_total} games (${h2h_winrate}%)`);
+                }
+            }
+        }
+    }
+    
     console.log('-------------------------------')
     console.log(`| Scan complete. ${new_replays} new replays have been added to ${cacheFilePath}.`)
 }
