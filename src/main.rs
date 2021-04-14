@@ -51,10 +51,8 @@ fn team(game: &Game, port: usize) -> Option<TeamColor> {
         .and_then(|t| Some(t.color))
 }
 
-fn main() {
-    let path = Path::new("game.slp");
-    let game = peppi::game(path).expect("error reading .slp file");
-
+/// Gets the state of all players on the last frame of the game.
+fn player_states(game: &Game) -> HashMap<usize, Player> {
     let mut players = HashMap::new();
 
     for port in 0..4 {
@@ -73,5 +71,13 @@ fn main() {
             });
     }
 
+    players
+}
+
+fn main() {
+    let path = Path::new("game.slp");
+    let game = peppi::game(path).expect("error reading .slp file");
+
+    let players = player_states(&game);
     println!("{:#?}", players);
 }
