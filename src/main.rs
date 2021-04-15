@@ -112,6 +112,10 @@ fn determine_winners(players: &Vec<Player>) {
     } else if on_same_team(&living) {
         // return living;
     }
+
+    println!("TODO: 2+ players, not on the same team.");
+    println!("{:?}", living);
+    // None
 }
 
 fn main() {
