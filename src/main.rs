@@ -2,7 +2,9 @@ use peppi::frame::Post;
 use peppi::game::{Game, TeamColor};
 use peppi::ubjson::Object;
 use std::collections::HashMap;
-use std::path::Path;
+use std::fs::{self};
+use std::path::PathBuf;
+use std::io;
 
 #[derive(Debug)]
 struct Player<'a> {
@@ -22,11 +24,11 @@ fn last_frame(game: &Game, port: usize) -> Option<&Post> {
 
 fn tag_map(game: &Game, port: usize) -> Option<&HashMap<String, Object>> {
     let port = port.to_string();
-    let players = game.metadata.json.get("players").unwrap();
+    let players = game.metadata.json.get("players")?;
     if let Object::Map(hm) = players {
         // TODO: Check if this port exists.
-        if let Object::Map(n) = hm.get(&port).unwrap() {
-            if let Object::Map(netplay) = n.get("names").unwrap() {
+        if let Object::Map(n) = hm.get(&port)? {
+            if let Object::Map(netplay) = n.get("names")? {
                 return Some(netplay);
             }
         }
@@ -36,7 +38,7 @@ fn tag_map(game: &Game, port: usize) -> Option<&HashMap<String, Object>> {
 }
 
 fn get_tag<'a>(key: &'a str, tags: &'a HashMap<String, Object>) -> Option<&'a String> {
-    match tags.get(key).unwrap() {
+    match tags.get(key)? {
         Object::Str(s) => Some(s),
         _ => None,
     }
@@ -51,27 +53,29 @@ fn team(game: &Game, port: usize) -> Option<TeamColor> {
 }
 
 /// Gets the state of all players on the last frame of the game.
-fn player_states(game: &Game) -> Vec<Player> {
+// TODO: Calculate how long the game lasted.
+fn player_states(game: &Game) -> Option<Vec<Player>> {
     let mut players = Vec::new();
 
     for port in 0..4 {
         if let Some(post) = last_frame(&game, port) {
-            let tags = tag_map(&game, port).unwrap();
+            let tags = tag_map(&game, port)?;
 
             players.push(Player{
                 stocks: post.stocks,
                 damage: post.damage,
-                code: get_tag("code", tags).unwrap(),
-                tag: get_tag("netplay", tags).unwrap(),
+                code: get_tag("code", tags)?,
+                tag: get_tag("netplay", tags)?,
                 team: team(&game, port),
             });
         }
     }
 
-    players
+    Some(players)
 }
 
 /// Checks if the living players are all on the same team.
+// TODO: This function doesn't work lmao.
 fn on_same_team(living: &Vec<&Player>) -> bool {
     let winning_team = living[0].team;
     living.iter().all(|player| {
@@ -113,16 +117,50 @@ fn determine_winners(players: &Vec<Player>) {
         // return living;
     }
 
-    println!("TODO: 2+ players, not on the same team.");
-    println!("{:?}", living);
+    println!("WARNING: 2+ players, not on the same team.");
+    println!("\t{:?}", living);
     // None
 }
 
-fn main() {
-    let path = Path::new("game.slp");
-    let game = peppi::game(path).expect("error reading .slp file");
+// TODO: Search recursively
+fn get_slippis(dir: &str) -> io::Result<Vec<PathBuf>> {
+    let entries = fs::read_dir(dir)?
+        .map(|res| res.map(|e| e.path()))
+        .collect::<Result<Vec<_>, io::Error>>()?;
 
-    let players = player_states(&game);
-    // println!("{:#?}", players);
-    determine_winners(&players);
+    let mut entries: Vec<PathBuf> = entries.iter()
+        .filter(|path| {
+            match path.extension() {
+                Some(ext) => ext == "slp",
+                _ => false,
+            }
+        })
+        .cloned()
+        .collect();
+
+    entries.sort();
+
+    Ok(entries)
+}
+
+fn main() -> io::Result<()> {
+    // TODO: This should come from a cli arg.
+    let files = get_slippis("2021-04-10")?;
+
+    for slp in files.iter().take(10) {
+        let game = match peppi::game(&slp) {
+            Ok(s) => s,
+            _ => continue,
+        };
+
+        let players = match player_states(&game) {
+            Some(p) => p,
+            _ => continue,
+        };
+
+        // println!("{}", players);
+        determine_winners(&players);
+    }
+
+    Ok(())
 }
