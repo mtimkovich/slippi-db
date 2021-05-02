@@ -10,7 +10,10 @@ use walkdir::{DirEntry, WalkDir};
 
 /// API for getting stats from Slippi replays.
 #[derive(Clap)]
-#[clap(version = crate_version!(), author = "Max Timkovich <max@timkovi.ch>")]
+#[clap(
+    version = crate_version!(),
+    author = "Max \"DJSwerve\" Timkovich <max@timkovi.ch>"
+)]
 #[clap(setting = AppSettings::ColoredHelp)]
 struct Opts {
     /// directories to search for .slp files in
