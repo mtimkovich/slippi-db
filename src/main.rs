@@ -92,13 +92,18 @@ fn player_states(game: &Game) -> Option<Vec<Player>> {
 
 /// Checks if the living players are all on the same team.
 fn on_same_team(living: &Vec<&Player>) -> bool {
-    let winning_team = living[0].team;
-    living
-        .iter()
-        .all(|player| match (player.team, winning_team) {
-            (Some(a), Some(b)) => a == b,
-            _ => false,
-        })
+    let winner = living.get(0);
+    if let Some(winner) = winner {
+        let winning_team = winner.team;
+        living
+            .iter()
+            .all(|player| match (player.team, winning_team) {
+                (Some(a), Some(b)) => a == b,
+                _ => false,
+            })
+    } else {
+        false
+    }
 }
 
 /** Steps for determining winners.
@@ -201,7 +206,7 @@ fn main() -> io::Result<()> {
         let game = match parse.game {
             Ok(game) => game,
             Err(err) => {
-                eprintln!("Error parsing {:?}: {}", parse.file, err);
+                eprintln!("{}: {}", err, parse.file.display());
                 continue;
             }
         };
