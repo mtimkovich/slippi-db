@@ -3,8 +3,8 @@ use peppi::game::{Game, TeamColor};
 use peppi::ubjson::Object;
 use std::collections::HashMap;
 use std::fs::{self};
-use std::path::PathBuf;
 use std::io;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 struct Player<'a> {
@@ -17,9 +17,11 @@ struct Player<'a> {
 
 /// Get the game state in the last frame.
 fn last_frame(game: &Game, port: usize) -> Option<&Post> {
-    return game.ports.get(port)
-                     .and_then(|p| p.as_ref())
-                     .and_then(|p| p.leader.post.last())
+    return game
+        .ports
+        .get(port)
+        .and_then(|p| p.as_ref())
+        .and_then(|p| p.leader.post.last());
 }
 
 fn tag_map(game: &Game, port: usize) -> Option<&HashMap<String, Object>> {
@@ -45,8 +47,7 @@ fn get_tag<'a>(key: &'a str, tags: &'a HashMap<String, Object>) -> Option<&'a St
 }
 
 fn team(game: &Game, port: usize) -> Option<TeamColor> {
-    game.start
-        .players[port]
+    game.start.players[port]
         .as_ref()
         .and_then(|p| p.team.as_ref())
         .and_then(|t| Some(t.color))
@@ -61,7 +62,7 @@ fn player_states(game: &Game) -> Option<Vec<Player>> {
         if let Some(post) = last_frame(&game, port) {
             let tags = tag_map(&game, port)?;
 
-            players.push(Player{
+            players.push(Player {
                 stocks: post.stocks,
                 damage: post.damage,
                 code: get_tag("code", tags)?,
@@ -75,15 +76,14 @@ fn player_states(game: &Game) -> Option<Vec<Player>> {
 }
 
 /// Checks if the living players are all on the same team.
-// TODO: This function doesn't work lmao.
 fn on_same_team(living: &Vec<&Player>) -> bool {
     let winning_team = living[0].team;
-    living.iter().all(|player| {
-        match (player.team, winning_team) {
+    living
+        .iter()
+        .all(|player| match (player.team, winning_team) {
             (Some(a), Some(b)) => a == b,
-            _ => false
-        }
-    })
+            _ => false,
+        })
 }
 
 /** Steps for determining winners.
@@ -96,30 +96,35 @@ fn on_same_team(living: &Vec<&Player>) -> bool {
  *    a. if same team (2 players), return both of them.
  *    b. else compare stocks and damage.
  */
-fn determine_winners(players: &Vec<Player>) {
+fn determine_winners<'a>(players: &'a Vec<Player<'a>>) -> Option<Vec<&'a Player<'a>>> {
     let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
 
     if living.len() == 1 {
         if let Some(team) = living[0].team {
-            let info = players.iter()
-                              .filter(|p|
-                                  match p.team {
-                                      Some(t) => t == team,
-                                      _ => false,
-                                  })
-                              .collect::<Vec<_>>();
-            println!("{:?}", info);
-            // return info;
+            // Find teammate.
+            let info = players
+                .iter()
+                .filter(|p| match p.team {
+                    Some(t) => t == team,
+                    _ => false,
+                })
+                .collect::<Vec<_>>();
+            return Some(info);
         } else {
-            // return living;
+            return Some(living);
         }
     } else if on_same_team(&living) {
-        // return living;
+        return Some(living);
     }
 
-    println!("WARNING: 2+ players, not on the same team.");
-    println!("\t{:?}", living);
-    // None
+    // TODO: Handle rage-quits. Sorry, Future Max!
+    // println!("WARNING: 2+ players, not on the same team.");
+    // println!("\t{:?}", living);
+    None
+}
+
+fn is_winner(winners: &Vec<&Player>, tag: &str) -> bool {
+    winners.iter().find(|p| p.tag == tag).is_some()
 }
 
 // TODO: Search recursively
@@ -128,12 +133,11 @@ fn get_slippis(dir: &str) -> io::Result<Vec<PathBuf>> {
         .map(|res| res.map(|e| e.path()))
         .collect::<Result<Vec<_>, io::Error>>()?;
 
-    let mut entries: Vec<PathBuf> = entries.iter()
-        .filter(|path| {
-            match path.extension() {
-                Some(ext) => ext == "slp",
-                _ => false,
-            }
+    let mut entries: Vec<PathBuf> = entries
+        .iter()
+        .filter(|path| match path.extension() {
+            Some(ext) => ext == "slp",
+            _ => false,
         })
         .cloned()
         .collect();
@@ -147,7 +151,11 @@ fn main() -> io::Result<()> {
     // TODO: This should come from a cli arg.
     let files = get_slippis("2021-04-10")?;
 
-    for slp in files.iter().take(10) {
+    let mut wins = 0.;
+    let played = files.len() as f32;
+
+    // TODO: Parallelize this.
+    for slp in files {
         let game = match peppi::game(&slp) {
             Ok(s) => s,
             _ => continue,
@@ -158,9 +166,17 @@ fn main() -> io::Result<()> {
             _ => continue,
         };
 
-        // println!("{}", players);
-        determine_winners(&players);
+        let winners = determine_winners(&players);
+        if let Some(winners) = winners {
+            let tag = "DJSwerve";
+            if is_winner(&winners, tag) {
+                wins += 1.;
+            }
+        }
     }
+
+    let average = wins / played * 100.;
+    println!("win rate: {}%", average);
 
     Ok(())
 }
