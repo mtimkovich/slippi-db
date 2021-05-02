@@ -1,6 +1,7 @@
 use peppi::frame::Post;
 use peppi::game::{Game, TeamColor};
 use peppi::ubjson::Object;
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::fs::{self};
 use std::io;
@@ -129,22 +130,22 @@ fn is_winner(winners: &Vec<&Player>, tag: &str) -> bool {
 
 // TODO: Search recursively
 fn get_slippis(dir: &str) -> io::Result<Vec<PathBuf>> {
-    let entries = fs::read_dir(dir)?
-        .map(|res| res.map(|e| e.path()))
-        .collect::<Result<Vec<_>, io::Error>>()?;
-
-    let mut entries: Vec<PathBuf> = entries
-        .iter()
+    let mut entries: Vec<_> = fs::read_dir(dir)?
+        .filter_map(|e| e.ok().and_then(|e| Some(e.path())))
         .filter(|path| match path.extension() {
             Some(ext) => ext == "slp",
             _ => false,
         })
-        .cloned()
         .collect();
 
     entries.sort();
 
     Ok(entries)
+}
+
+/// Parse all replays in parallel.
+fn parse_replays(files: Vec<PathBuf>) -> Vec<Result<Game, peppi::ParseError>> {
+    files.into_par_iter().map(|f| peppi::game(&f)).collect()
 }
 
 fn main() -> io::Result<()> {
@@ -154,11 +155,13 @@ fn main() -> io::Result<()> {
     let mut wins = 0.;
     let played = files.len() as f32;
 
-    // TODO: Parallelize this.
-    for slp in files {
-        let game = match peppi::game(&slp) {
-            Ok(s) => s,
-            _ => continue,
+    for game in parse_replays(files) {
+        let game = match game {
+            Ok(game) => game,
+            Err(err) => {
+                eprintln!("{}", err);
+                continue;
+            }
         };
 
         let players = match player_states(&game) {
