@@ -74,10 +74,11 @@ fn get_tag<'a>(key: &'a str, tags: &'a HashMap<String, Object>) -> Option<&'a St
 }
 
 fn team(game: &Game, port: usize) -> Option<TeamColor> {
-    game.start.players[port]
-        .as_ref()
-        .and_then(|p| p.team.as_ref())
-        .and_then(|t| Some(t.color))
+    game.start.players.get(port).and_then(|p| {
+        p.as_ref()
+            .and_then(|p| p.team.as_ref())
+            .and_then(|t| Some(t.color))
+    })
 }
 
 /// Gets the state of all players on the last frame of the game.
