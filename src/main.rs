@@ -1,11 +1,22 @@
+use clap::{crate_version, AppSettings, Clap};
 use peppi::frame::Post;
 use peppi::game::{Game, TeamColor};
 use peppi::ubjson::Object;
 use rayon::prelude::*;
 use std::collections::HashMap;
 use std::io;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
+
+/// as do all doc strings on fields
+#[derive(Clap)]
+#[clap(version = crate_version!(), author = "Max Timkovich <max@timkovi.ch>")]
+#[clap(setting = AppSettings::ColoredHelp)]
+struct Opts {
+    /// directories to search for .slp files in
+    #[clap(required(true))]
+    directories: Vec<PathBuf>,
+}
 
 #[derive(Debug)]
 struct Player<'a> {
@@ -143,34 +154,51 @@ fn is_slp(entry: &DirEntry) -> Option<PathBuf> {
 }
 
 /// Get all slippi files in a directory recursively.
-fn get_slippis(dir: &str) -> io::Result<Vec<PathBuf>> {
-    let mut entries: Vec<_> = WalkDir::new(dir)
-        .into_iter()
-        .filter_map(|e| e.ok().and_then(|e| is_slp(&e)))
-        .collect();
+fn get_slippis(dirs: &Vec<PathBuf>) -> io::Result<Vec<PathBuf>> {
+    let mut entries = Vec::new();
+    for dir in dirs {
+        entries.append(
+            &mut WalkDir::new(dir)
+                .into_iter()
+                .filter_map(|e| e.ok().and_then(|e| is_slp(&e)))
+                .collect(),
+        );
+    }
 
     entries.sort();
 
     Ok(entries)
 }
 
+struct Parse<'a> {
+    file: &'a Path,
+    game: Result<Game, peppi::ParseError>,
+}
+
 /// Parse all replays in parallel.
-fn parse_replays(files: Vec<PathBuf>) -> Vec<Result<Game, peppi::ParseError>> {
-    files.into_par_iter().map(|f| peppi::game(&f)).collect()
+fn parse_replays<'a>(files: &'a Vec<PathBuf>) -> Vec<Parse<'a>> {
+    files
+        .into_par_iter()
+        .map(|f| Parse {
+            file: &f,
+            game: peppi::game(&f),
+        })
+        .collect()
 }
 
 fn main() -> io::Result<()> {
-    // TODO: This should come from a cli arg.
-    let files = get_slippis("2021-04-10")?;
+    let opts: Opts = Opts::parse();
+    let files = get_slippis(&opts.directories)?;
+    // println!("{:?}", files);
 
     let mut wins = 0.;
     let played = files.len() as f32;
 
-    for game in parse_replays(files) {
-        let game = match game {
+    for parse in parse_replays(&files) {
+        let game = match parse.game {
             Ok(game) => game,
             Err(err) => {
-                eprintln!("{}", err);
+                eprintln!("Error parsing {:?}: {}", parse.file, err);
                 continue;
             }
         };
