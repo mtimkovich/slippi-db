@@ -8,7 +8,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
 
-/// as do all doc strings on fields
+/// API for getting stats from Slippi replays.
 #[derive(Clap)]
 #[clap(version = crate_version!(), author = "Max Timkovich <max@timkovi.ch>")]
 #[clap(setting = AppSettings::ColoredHelp)]
