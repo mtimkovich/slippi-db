@@ -19,6 +19,12 @@ struct Opts {
     /// directories to search for .slp files in
     #[clap(required(true))]
     directories: Vec<PathBuf>,
+    /// suppress error messages
+    #[clap(short, long)]
+    quiet: bool,
+    /// tag of player to calculate win rate for
+    #[clap(short, long)]
+    me: String,
 }
 
 #[derive(Debug)]
@@ -28,6 +34,12 @@ struct Player<'a> {
     stocks: u8,
     team: Option<TeamColor>,
     damage: f32,
+}
+
+impl<'a> AsRef<Player<'a>> for Player<'a> {
+    fn as_ref(&self) -> &Self {
+        self
+    }
 }
 
 /// Get the game state in the last frame.
@@ -116,7 +128,7 @@ fn on_same_team(living: &Vec<&Player>) -> bool {
  *    a. if same team (2 players), return both of them.
  *    b. else compare stocks and damage.
  */
-fn determine_winners<'a>(players: &'a Vec<Player<'a>>) -> Option<Vec<&'a Player<'a>>> {
+fn determine_winners<'a>(players: &'a Vec<Player>) -> Option<Vec<&'a Player<'a>>> {
     let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
 
     if living.len() == 1 {
@@ -143,11 +155,11 @@ fn determine_winners<'a>(players: &'a Vec<Player<'a>>) -> Option<Vec<&'a Player<
     None
 }
 
-/// Checks if given tag is a winner.
-fn is_winner(winners: &Vec<&Player>, tag: &str) -> bool {
-    winners
+/// Checks if player's tag is in vector of players.
+fn has_player<'a, P: AsRef<Player<'a>>>(players: &Vec<P>, tag: &str) -> bool {
+    players
         .iter()
-        .find(|p| p.tag.to_lowercase() == tag.to_lowercase())
+        .find(|p| p.as_ref().tag.to_lowercase() == tag.to_lowercase())
         .is_some()
 }
 
@@ -197,16 +209,17 @@ fn parse_replays<'a>(files: &'a Vec<PathBuf>) -> Vec<Parse<'a>> {
 fn main() -> io::Result<()> {
     let opts: Opts = Opts::parse();
     let files = get_slippis(&opts.directories)?;
-    // println!("{:?}", files);
 
     let mut wins = 0.;
-    let played = files.len() as f32;
+    let mut played = 0.;
 
     for parse in parse_replays(&files) {
         let game = match parse.game {
             Ok(game) => game,
             Err(err) => {
-                eprintln!("{}: {}", err, parse.file.display());
+                if !opts.quiet {
+                    eprintln!("{}: {}", err, parse.file.display());
+                }
                 continue;
             }
         };
@@ -216,10 +229,15 @@ fn main() -> io::Result<()> {
             _ => continue,
         };
 
+        if !has_player(&players, &opts.me) {
+            continue;
+        }
+
+        played += 1.;
+
         let winners = determine_winners(&players);
         if let Some(winners) = winners {
-            let tag = "DJSwerve";
-            if is_winner(&winners, tag) {
+            if has_player(&winners, &opts.me) {
                 wins += 1.;
             }
         }
