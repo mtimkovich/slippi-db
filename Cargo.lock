@@ -423,7 +423,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "slippi-stats"
+name = "slippi-stats-api"
 version = "0.1.0"
 dependencies = [
  "peppi",
