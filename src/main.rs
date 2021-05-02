@@ -96,30 +96,38 @@ fn on_same_team(living: &Vec<&Player>) -> bool {
  *    a. if same team (2 players), return both of them.
  *    b. else compare stocks and damage.
  */
-fn determine_winners(players: &Vec<Player>) {
+fn determine_winners<'a>(players: &'a Vec<Player<'a>>) -> Option<Vec<&'a Player<'a>>> {
     let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
 
     if living.len() == 1 {
         if let Some(team) = living[0].team {
-            let info = players.iter()
-                              .filter(|p|
-                                  match p.team {
-                                      Some(t) => t == team,
-                                      _ => false,
-                                  })
-                              .collect::<Vec<_>>();
-            println!("{:?}", info);
-            // return info;
+            // Find teammate.
+            let info = players
+                .iter()
+                .filter(|p|
+                    match p.team {
+                        Some(t) => t == team,
+                        _ => false,
+                    })
+                .collect::<Vec<_>>();
+            return Some(info);
         } else {
-            // return living;
+            return Some(living);
         }
     } else if on_same_team(&living) {
-        // return living;
+        return Some(living);
     }
 
-    println!("WARNING: 2+ players, not on the same team.");
-    println!("\t{:?}", living);
-    // None
+    // TODO: Handle rage-quits. Sorry, Future Max!
+    // println!("WARNING: 2+ players, not on the same team.");
+    // println!("\t{:?}", living);
+    None
+}
+
+fn is_winner(winners: &Vec<&Player>, tag: &str) -> bool {
+    winners.iter().find(|p| {
+        p.tag == tag
+    }).is_some()
 }
 
 // TODO: Search recursively
@@ -147,7 +155,11 @@ fn main() -> io::Result<()> {
     // TODO: This should come from a cli arg.
     let files = get_slippis("2021-04-10")?;
 
-    for slp in files.iter().take(10) {
+    let mut wins = 0.;
+    let played = files.len() as f32;
+
+    // TODO: Parallelize this.
+    for slp in files {
         let game = match peppi::game(&slp) {
             Ok(s) => s,
             _ => continue,
@@ -158,9 +170,17 @@ fn main() -> io::Result<()> {
             _ => continue,
         };
 
-        // println!("{}", players);
-        determine_winners(&players);
+        let winners = determine_winners(&players);
+        if let Some(winners) = winners {
+            let tag = "DJSwerve";
+            if is_winner(&winners, tag) {
+                wins += 1.;
+            }
+        }
     }
+
+    let average = wins / played * 100.;
+    println!("win rate: {}%", average);
 
     Ok(())
 }
