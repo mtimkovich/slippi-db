@@ -245,7 +245,7 @@ fn main() -> io::Result<()> {
     }
 
     let average = wins / played * 100.;
-    println!("win rate: {}%", average);
+    println!("win rate: {:.2}%", average);
 
     Ok(())
 }
