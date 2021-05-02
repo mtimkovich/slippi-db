@@ -6,7 +6,7 @@ Calculates win rate over a set of replay files using [Peppi][peppi]. The primary
 
 ## 🚧 Roadmap
 
-- [ ] Search directories recursively.
+- [x] Search directories recursively.
 - [ ] [Determine what data to extract from replays.][stats]
 - [ ] [Filter which replays to parse.][ballchasing]
 - [x] Parse Slippi files in parallel.

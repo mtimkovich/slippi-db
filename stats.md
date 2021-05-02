@@ -6,3 +6,4 @@ _Check what the desktop app tracks and copy them._
 - [ ] Game time
 - [ ] Opponent's characters
 - [ ] Stages
+- [ ] Is teams

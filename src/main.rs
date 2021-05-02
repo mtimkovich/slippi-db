@@ -3,9 +3,9 @@ use peppi::game::{Game, TeamColor};
 use peppi::ubjson::Object;
 use rayon::prelude::*;
 use std::collections::HashMap;
-use std::fs::{self};
 use std::io;
 use std::path::PathBuf;
+use walkdir::{DirEntry, WalkDir};
 
 #[derive(Debug)]
 struct Player<'a> {
@@ -124,18 +124,29 @@ fn determine_winners<'a>(players: &'a Vec<Player<'a>>) -> Option<Vec<&'a Player<
     None
 }
 
+/// Checks if given tag is a winner.
 fn is_winner(winners: &Vec<&Player>, tag: &str) -> bool {
-    winners.iter().find(|p| p.tag == tag).is_some()
+    winners
+        .iter()
+        .find(|p| p.tag.to_lowercase() == tag.to_lowercase())
+        .is_some()
 }
 
-// TODO: Search recursively
+fn is_slp(entry: &DirEntry) -> Option<PathBuf> {
+    if let Some(s) = entry.file_name().to_str() {
+        if s.ends_with(".slp") {
+            return Some(entry.path().to_path_buf());
+        }
+    }
+
+    None
+}
+
+/// Get all slippi files in a directory recursively.
 fn get_slippis(dir: &str) -> io::Result<Vec<PathBuf>> {
-    let mut entries: Vec<_> = fs::read_dir(dir)?
-        .filter_map(|e| e.ok().and_then(|e| Some(e.path())))
-        .filter(|path| match path.extension() {
-            Some(ext) => ext == "slp",
-            _ => false,
-        })
+    let mut entries: Vec<_> = WalkDir::new(dir)
+        .into_iter()
+        .filter_map(|e| e.ok().and_then(|e| is_slp(&e)))
         .collect();
 
     entries.sort();
