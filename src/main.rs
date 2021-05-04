@@ -8,7 +8,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
 
-/// API for getting stats from Slippi replays.
+/// Create sqlite database from Slippi replays.
 #[derive(Clap)]
 #[clap(
     version = crate_version!(),
@@ -22,9 +22,6 @@ struct Opts {
     /// suppress error messages
     #[clap(short, long)]
     quiet: bool,
-    /// tag of player to calculate win rate for
-    #[clap(short, long)]
-    me: String,
 }
 
 #[derive(Debug)]
@@ -186,8 +183,6 @@ fn get_slippis(dirs: &Vec<PathBuf>) -> io::Result<Vec<PathBuf>> {
         );
     }
 
-    entries.sort();
-
     Ok(entries)
 }
 
@@ -211,41 +206,7 @@ fn main() -> io::Result<()> {
     let opts: Opts = Opts::parse();
     let files = get_slippis(&opts.directories)?;
 
-    let mut wins = 0.;
-    let mut played = 0.;
-
-    for parse in parse_replays(&files) {
-        let game = match parse.game {
-            Ok(game) => game,
-            Err(err) => {
-                if !opts.quiet {
-                    eprintln!("{}: {}", err, parse.file.display());
-                }
-                continue;
-            }
-        };
-
-        let players = match player_states(&game) {
-            Some(p) => p,
-            _ => continue,
-        };
-
-        if !has_player(&players, &opts.me) {
-            continue;
-        }
-
-        played += 1.;
-
-        let winners = determine_winners(&players);
-        if let Some(winners) = winners {
-            if has_player(&winners, &opts.me) {
-                wins += 1.;
-            }
-        }
-    }
-
-    let average = wins / played * 100.;
-    println!("win rate: {:.2}%", average);
+    println!("{:?}", files);
 
     Ok(())
 }

@@ -1,5 +1,5 @@
 [package]
-name = "slippi-stats-api"
+name = "slippi-db"
 version = "0.1.0"
 authors = ["Max Timkovich <max@timkovi.ch>"]
 edition = "2018"
