@@ -1,4 +1,4 @@
-create table games (
+create table if not exists games (
     id integer primary key not null,
     filename text not null,
     is_teams boolean not null,
@@ -20,7 +20,7 @@ create table games (
     foreign key(port4) references players(id)
 );
 
-create table players (
+create table if not exists players (
     id integer primary key not null,
     tag text not null,
     code text not null,
@@ -28,6 +28,6 @@ create table players (
     fighter text not null
 );
 
-create table slps (
+create table if not exists slps (
     filename text primary key not null
 );
