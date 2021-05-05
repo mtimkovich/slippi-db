@@ -1,6 +1,6 @@
 create table if not exists games (
     id integer primary key not null,
-    filename text not null,
+    filepath text not null,
     is_teams boolean not null,
     start_time datetime not null,
     stage text not null,
@@ -12,8 +12,9 @@ create table if not exists games (
     -- json
     teams text,
     winners text not null,
+    remaining_stocks text not null,
 
-    foreign key(filename) references slps(filename),
+    foreign key(filepath) references slps(filepath),
     foreign key(port1) references players(id),
     foreign key(port2) references players(id),
     foreign key(port3) references players(id),
@@ -29,5 +30,5 @@ create table if not exists players (
 );
 
 create table if not exists slps (
-    filename text primary key not null
+    filepath text primary key not null unique
 );

@@ -1,12 +1,14 @@
+use anyhow::Result;
 use clap::{crate_version, AppSettings, Clap};
 use peppi::frame::Post;
 use peppi::game::{Game, TeamColor};
 use peppi::ubjson::Object;
 use rayon::prelude::*;
 use std::collections::HashMap;
-use std::io;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
+
+mod sql;
 
 /// Create sqlite database from Slippi replays.
 #[derive(Clap)]
@@ -172,7 +174,7 @@ fn is_slp(entry: &DirEntry) -> Option<PathBuf> {
 }
 
 /// Get all slippi files in a directory recursively.
-fn get_slippis(dirs: &Vec<PathBuf>) -> io::Result<Vec<PathBuf>> {
+fn get_slippis(dirs: &Vec<PathBuf>) -> Result<Vec<PathBuf>> {
     let mut entries = Vec::new();
     for dir in dirs {
         entries.append(
@@ -202,9 +204,10 @@ fn parse_replays<'a>(files: &'a Vec<PathBuf>) -> Vec<Parse<'a>> {
         .collect()
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
     let files = get_slippis(&opts.directories)?;
+    sql::create_tables()?;
 
     println!("{:?}", files);
 
