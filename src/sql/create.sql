@@ -1,6 +1,6 @@
 create table if not exists games (
     id integer primary key not null,
-    filepath text not null,
+    filepath text not null unique,
     is_teams boolean not null,
     start_time datetime not null,
     stage text not null,
@@ -27,8 +27,4 @@ create table if not exists players (
     code text not null,
     -- `character` is a reserved word lol
     fighter text not null
-);
-
-create table if not exists slps (
-    filepath text primary key not null unique
 );

@@ -207,9 +207,7 @@ fn parse_replays<'a>(files: &'a Vec<PathBuf>) -> Vec<Parse<'a>> {
 fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
     let files = get_slippis(&opts.directories)?;
-    sql::create_tables()?;
-
-    println!("{:?}", files);
+    let db = sql::DB::new("slippi.db")?;
 
     Ok(())
 }
