@@ -1,14 +1,13 @@
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use clap::{crate_version, AppSettings, Clap};
-use peppi::frame::Post;
-use peppi::game::{Game, TeamColor};
-use peppi::ubjson::Object;
+use peppi::game::Game;
 use rayon::prelude::*;
-use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
 
 mod sql;
+mod stage;
 
 /// Create sqlite database from Slippi replays.
 #[derive(Clap)]
@@ -21,146 +20,6 @@ struct Opts {
     /// directories to search for .slp files in
     #[clap(required(true))]
     directories: Vec<PathBuf>,
-    /// suppress error messages
-    #[clap(short, long)]
-    quiet: bool,
-}
-
-#[derive(Debug)]
-struct Player<'a> {
-    code: &'a String,
-    tag: &'a String,
-    stocks: u8,
-    team: Option<TeamColor>,
-    damage: f32,
-}
-
-impl<'a> AsRef<Player<'a>> for Player<'a> {
-    fn as_ref(&self) -> &Self {
-        self
-    }
-}
-
-/// Get the game state in the last frame.
-fn last_frame(game: &Game, port: usize) -> Option<&Post> {
-    return game
-        .ports
-        .get(port)
-        .and_then(|p| p.as_ref())
-        .and_then(|p| p.leader.post.last());
-}
-
-fn tag_map(game: &Game, port: usize) -> Option<&HashMap<String, Object>> {
-    let port = port.to_string();
-    let players = game.metadata.json.get("players")?;
-    if let Object::Map(hm) = players {
-        // TODO: Check if this port exists.
-        if let Object::Map(n) = hm.get(&port)? {
-            if let Object::Map(netplay) = n.get("names")? {
-                return Some(netplay);
-            }
-        }
-    }
-
-    None
-}
-
-fn get_tag<'a>(key: &'a str, tags: &'a HashMap<String, Object>) -> Option<&'a String> {
-    match tags.get(key)? {
-        Object::Str(s) => Some(s),
-        _ => None,
-    }
-}
-
-fn team(game: &Game, port: usize) -> Option<TeamColor> {
-    game.start.players.get(port).and_then(|p| {
-        p.as_ref()
-            .and_then(|p| p.team.as_ref())
-            .and_then(|t| Some(t.color))
-    })
-}
-
-/// Gets the state of all players on the last frame of the game.
-// TODO: Calculate how long the game lasted.
-fn player_states(game: &Game) -> Option<Vec<Player>> {
-    let mut players = Vec::new();
-
-    for port in 0..4 {
-        if let Some(post) = last_frame(&game, port) {
-            let tags = tag_map(&game, port)?;
-
-            players.push(Player {
-                stocks: post.stocks,
-                damage: post.damage,
-                code: get_tag("code", tags)?,
-                tag: get_tag("netplay", tags)?,
-                team: team(&game, port),
-            });
-        }
-    }
-
-    Some(players)
-}
-
-/// Checks if the living players are all on the same team.
-fn on_same_team(living: &Vec<&Player>) -> bool {
-    let winner = living.get(0);
-    if let Some(winner) = winner {
-        let winning_team = winner.team;
-        living
-            .iter()
-            .all(|player| match (player.team, winning_team) {
-                (Some(a), Some(b)) => a == b,
-                _ => false,
-            })
-    } else {
-        false
-    }
-}
-
-/** Steps for determining winners.
- *
- * 1. Remove players with 0 stocks.
- * 2. If 1 player:
- *    a. If team, find their teammate.
- *    b. else player is only winner.
- * 3. If 2 or more players:
- *    a. if same team (2 players), return both of them.
- *    b. else compare stocks and damage.
- */
-fn determine_winners<'a>(players: &'a Vec<Player>) -> Option<Vec<&'a Player<'a>>> {
-    let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
-
-    if living.len() == 1 {
-        if let Some(team) = living[0].team {
-            // Find teammate.
-            let info = players
-                .iter()
-                .filter(|p| match p.team {
-                    Some(t) => t == team,
-                    _ => false,
-                })
-                .collect::<Vec<_>>();
-            return Some(info);
-        } else {
-            return Some(living);
-        }
-    } else if on_same_team(&living) {
-        return Some(living);
-    }
-
-    // TODO: Handle rage-quits. Sorry, Future Max!
-    // println!("WARNING: 2+ players, not on the same team.");
-    // println!("\t{:?}", living);
-    None
-}
-
-/// Checks if player's tag is in vector of players.
-fn has_player<'a, P: AsRef<Player<'a>>>(players: &Vec<P>, tag: &str) -> bool {
-    players
-        .iter()
-        .find(|p| p.as_ref().tag.to_lowercase() == tag.to_lowercase())
-        .is_some()
 }
 
 fn is_slp(entry: &DirEntry) -> Option<PathBuf> {
@@ -188,26 +47,57 @@ fn get_slippis(dirs: &Vec<PathBuf>) -> Result<Vec<PathBuf>> {
     Ok(entries)
 }
 
-struct Parse<'a> {
-    file: &'a Path,
-    game: Result<Game, peppi::ParseError>,
+#[derive(Debug)]
+pub struct GameEntry {
+    filepath: String,
+    is_teams: bool,
+    duration: f32,
+    stage: String,
+    start_time: DateTime<Utc>,
 }
 
-/// Parse all replays in parallel.
-fn parse_replays<'a>(files: &'a Vec<PathBuf>) -> Vec<Parse<'a>> {
-    files
-        .into_par_iter()
-        .map(|f| Parse {
-            file: &f,
-            game: peppi::game(&f),
+impl GameEntry {
+    pub fn new(game: &Game, filepath: &str) -> Option<Self> {
+        let duration = game.metadata.duration.and_then(|t| Some(t as f32 / 3600.));
+        let start_time = game.metadata.date;
+        let stage = stage::name(game.start.stage);
+
+        if duration.is_none() || start_time.is_none() || stage.is_none() {
+            return None;
+        }
+
+        Some(GameEntry {
+            filepath: filepath.to_string(),
+            is_teams: game.start.is_teams,
+            duration: duration.unwrap(),
+            start_time: start_time.unwrap(),
+            stage: stage.unwrap().to_string(),
         })
-        .collect()
+    }
+}
+
+fn parse_replay(path: PathBuf) -> Option<GameEntry> {
+    let filepath = path.display().to_string();
+
+    let game = match peppi::game(&path) {
+        Ok(game) => game,
+        Err(_) => return None,
+    };
+
+    GameEntry::new(&game, &filepath)
 }
 
 fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
     let files = get_slippis(&opts.directories)?;
-    let db = sql::DB::new("slippi.db")?;
+    let mut db = sql::DB::new("slippi.db")?;
+    // TODO: Check the DB to see if there are new files to be added to save time.
+
+    // Parse replays in parallel.
+    let entries: Vec<_> = files.into_par_iter().filter_map(parse_replay).collect();
+
+    let inserts = db.insert_entries(&entries)?;
+    println!("Added {} Slippi files.", inserts);
 
     Ok(())
 }

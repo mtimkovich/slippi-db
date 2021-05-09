@@ -525,6 +525,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fbc783b7ddae608338003bac1fa00b6786a75a9675fbd8e87243ecfdea3f6ed2"
 dependencies = [
  "bitflags",
+ "chrono",
  "fallible-iterator",
  "fallible-streaming-iterator",
  "hashlink",
@@ -590,10 +591,12 @@ name = "slippi-db"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "clap 3.0.0-beta.2",
  "peppi",
  "rayon",
  "rusqlite",
+ "strum",
  "walkdir",
 ]
 
@@ -614,6 +617,12 @@ name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
+
+[[package]]
+name = "strum"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7318c509b5ba57f18533982607f24070a55d353e90d4cae30c467cdb2ad5ac5c"
 
 [[package]]
 name = "syn"
