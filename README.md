@@ -2,7 +2,7 @@
 
 Slippi DB ingests [Slippi replays][slippi] and puts the data into a SQLite database for easier parsing.
 
-The primary goal of this project is to make it easier to perform analysis on large amounts of Slippi data. The end goal is to have something similar to [Ballchasing's API][ballchasing] but for Melee.
+The primary goal of this project is to make it easier to analyze large amounts of Slippi data. The end goal is to have something similar to [Ballchasing's API][ballchasing] but for Melee.
 
 Written in [Rust][rust] using [Peppi][peppi], Slippi DB can parse gigabytes worth of Slippi files in a couple seconds.
 
@@ -33,6 +33,7 @@ $ sqlite3 slippi.db < examples/example.sql
   - [x] Discard short matches (<30s).
   - [ ] Handle tiebreaks.
   - [ ] Detect rage-quits and assign them losses.
+- [ ] Create a release.
 
 ## Bug/Feature Requests
 

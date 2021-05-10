@@ -21,10 +21,13 @@ mod stage;
 )]
 #[clap(setting = AppSettings::ColoredHelp)]
 struct Opts {
-    /// directories to search for .slp files in
+    /// Directories to search for .slp files in
     #[clap(required(true))]
     directories: Vec<PathBuf>,
-    /// print error messages
+    /// Set output database file
+    #[clap(short, long, default_value = "slippi.db")]
+    output_db: String,
+    /// Show error messages
     #[clap(short, long)]
     verbose: bool,
 }
@@ -69,10 +72,11 @@ impl GameEntry {
         let start_time = game.metadata.date.ok_or(anyhow!("no start_time"))?;
         let stage = stage::name(game.start.stage).ok_or(anyhow!("invalid stage"))?;
 
+        // frames to minutes
         duration /= 3600.;
 
         if duration < 0.5 {
-            return Err(anyhow!("game < 30s, skipping."));
+            return Err(anyhow!("game < 30s"));
         }
 
         Ok(GameEntry {
@@ -89,7 +93,7 @@ fn parse_replay(path: String) -> Option<GameEntry> {
     let game = match peppi::game(&PathBuf::from(&path)) {
         Ok(game) => game,
         Err(e) => {
-            warn!("{}: {}", path, e);
+            warn!("{}: {}, skipping", path, e);
             return None;
         }
     };
@@ -97,7 +101,7 @@ fn parse_replay(path: String) -> Option<GameEntry> {
     match GameEntry::new(&game, &path) {
         Ok(entry) => Some(entry),
         Err(e) => {
-            warn!("{}: {}", path, e);
+            warn!("{}: {}, skipping", path, e);
             return None;
         }
     }
@@ -109,7 +113,7 @@ fn main() -> Result<()> {
     env_logger::init();
 
     let files = get_slippis(&opts.directories)?;
-    let mut db = sql::DB::new("slippi.db")?;
+    let mut db = sql::DB::new(&opts.output_db)?;
     let diff = db.compare_filepaths(&files)?;
 
     {
