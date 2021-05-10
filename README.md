@@ -17,7 +17,7 @@ $ slippi-db SLIPPI_FOLDER
 
 ## 🗒️ Examples
 
-There's some examples of what is possible in the `examples/` directory. This is good starting point especially if you're not familiar with SQL. These can be run via:
+There's some examples of what is possible in the `examples/` directory. This is good starting point, especially if you're not familiar with SQL. These can be run via:
 
 ```shell
 $ sqlite3 slippi.db < examples/example.sql
