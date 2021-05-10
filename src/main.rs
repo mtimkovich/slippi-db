@@ -3,13 +3,17 @@ use chrono::{DateTime, Utc};
 use clap::{crate_version, AppSettings, Clap};
 use peppi::game::Game;
 use rayon::prelude::*;
+use std::env;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
+
+#[macro_use]
+extern crate log;
 
 mod sql;
 mod stage;
 
-/// Create sqlite database from Slippi replays.
+/// Create SQLite database from Slippi replays
 #[derive(Clap)]
 #[clap(
     version = crate_version!(),
@@ -20,9 +24,9 @@ struct Opts {
     /// directories to search for .slp files in
     #[clap(required(true))]
     directories: Vec<PathBuf>,
-    /// suppress error message
+    /// print error messages
     #[clap(short, long)]
-    quiet: bool,
+    verbose: bool,
 }
 
 fn is_slp(entry: &DirEntry) -> Option<PathBuf> {
@@ -61,11 +65,19 @@ pub struct GameEntry {
 
 impl GameEntry {
     pub fn new(game: &Game, filepath: &str) -> Option<Self> {
-        let duration = game.metadata.duration.and_then(|t| Some(t as f32 / 3600.));
+        let duration = game.metadata.duration.and_then(|time| {
+            let time = time as f32 / 3600.;
+            if time < 0.5 {
+                return None;
+            }
+
+            Some(time)
+        });
         let start_time = game.metadata.date;
         let stage = stage::name(game.start.stage);
 
         if duration.is_none() || start_time.is_none() || stage.is_none() {
+            warn!("{}: error parsing game, skipping.", filepath);
             return None;
         }
 
@@ -79,13 +91,11 @@ impl GameEntry {
     }
 }
 
-fn parse_replay(path: String, quiet: bool) -> Option<GameEntry> {
+fn parse_replay(path: String) -> Option<GameEntry> {
     let game = match peppi::game(&PathBuf::from(&path)) {
         Ok(game) => game,
         Err(e) => {
-            if !quiet {
-                eprintln!("{}: {}", path, e);
-            }
+            warn!("{}: {}", path, e);
             return None;
         }
     };
@@ -95,6 +105,9 @@ fn parse_replay(path: String, quiet: bool) -> Option<GameEntry> {
 
 fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
+    env::set_var("RUST_LOG", if opts.verbose { "info" } else { "error" });
+    env_logger::init();
+
     let files = get_slippis(&opts.directories)?;
     let mut db = sql::DB::new("slippi.db")?;
     let diff = db.compare_filepaths(&files)?;
@@ -107,10 +120,7 @@ fn main() -> Result<()> {
     }
 
     // Parse replays in parallel.
-    let entries: Vec<GameEntry> = diff
-        .into_par_iter()
-        .filter_map(|e| parse_replay(e, opts.quiet))
-        .collect();
+    let entries: Vec<GameEntry> = diff.into_par_iter().filter_map(parse_replay).collect();
 
     let inserts = db.insert_entries(&entries)?;
     println!("Added {} Slippi files.", inserts);
