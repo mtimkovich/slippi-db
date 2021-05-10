@@ -4,7 +4,7 @@ Slippi DB ingests [Slippi replays][slippi] and puts the data into a SQLite datab
 
 The primary goal of this project is to make it easier to perform analysis of Slippi files by putting them in a more structured format. The end goal is to have something similar to [Ballchasing's API][ballchasing] but for Melee.
 
-Written in [Rust][rust] using [Peppi][peppi], slippi-db can parse gigabytes worth of Slippi files in a couple seconds.
+Written in [Rust][rust] using [Peppi][peppi], Slippi DB can parse gigabytes worth of Slippi files in a couple seconds.
 
 ## ⌨️ Usage
 
