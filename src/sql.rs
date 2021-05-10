@@ -31,14 +31,7 @@ impl DB {
     fn get_filepaths(&self) -> Result<HashSet<String>> {
         let mut stmt = self.conn.prepare("select filepath from games")?;
         let rows = stmt.query_map([], |row| row.get(0))?;
-        let mut set: HashSet<String> = HashSet::new();
-        for row in rows {
-            if let Ok(row) = row {
-                set.insert(row);
-            }
-        }
-
-        Ok(set)
+        Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
     pub fn insert_entries(&mut self, entries: &Vec<GameEntry>) -> Result<u32> {
