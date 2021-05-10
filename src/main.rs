@@ -20,6 +20,9 @@ struct Opts {
     /// directories to search for .slp files in
     #[clap(required(true))]
     directories: Vec<PathBuf>,
+    /// suppress error message
+    #[clap(short, long)]
+    quiet: bool,
 }
 
 fn is_slp(entry: &DirEntry) -> Option<PathBuf> {
@@ -76,25 +79,38 @@ impl GameEntry {
     }
 }
 
-fn parse_replay(path: PathBuf) -> Option<GameEntry> {
-    let filepath = path.display().to_string();
-
-    let game = match peppi::game(&path) {
+fn parse_replay(path: String, quiet: bool) -> Option<GameEntry> {
+    let game = match peppi::game(&PathBuf::from(&path)) {
         Ok(game) => game,
-        Err(_) => return None,
+        Err(e) => {
+            if !quiet {
+                eprintln!("{}: {}", path, e);
+            }
+            return None;
+        }
     };
 
-    GameEntry::new(&game, &filepath)
+    GameEntry::new(&game, &path)
 }
 
 fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
     let files = get_slippis(&opts.directories)?;
     let mut db = sql::DB::new("slippi.db")?;
-    // TODO: Check the DB to see if there are new files to be added to save time.
+    let diff = db.compare_filepaths(&files)?;
+
+    {
+        let duplicates = files.len() - diff.len();
+        if duplicates > 0 {
+            println!("{} replays already in database, skipping.", duplicates);
+        }
+    }
 
     // Parse replays in parallel.
-    let entries: Vec<_> = files.into_par_iter().filter_map(parse_replay).collect();
+    let entries: Vec<GameEntry> = diff
+        .into_par_iter()
+        .filter_map(|e| parse_replay(e, opts.quiet))
+        .collect();
 
     let inserts = db.insert_entries(&entries)?;
     println!("Added {} Slippi files.", inserts);

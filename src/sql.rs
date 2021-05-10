@@ -1,6 +1,8 @@
 use crate::GameEntry;
 use anyhow::Result;
 use rusqlite::{params, Connection};
+use std::collections::HashSet;
+use std::path::PathBuf;
 
 pub struct DB {
     conn: Connection,
@@ -16,6 +18,27 @@ impl DB {
         db.conn.execute_batch(&cmd)?;
 
         Ok(db)
+    }
+
+    pub fn compare_filepaths(&self, files: &Vec<PathBuf>) -> Result<Vec<String>> {
+        let fileset: HashSet<_> = files.into_iter().map(|f| f.display().to_string()).collect();
+        Ok(fileset
+            .difference(&self.get_filepaths()?)
+            .cloned()
+            .collect())
+    }
+
+    fn get_filepaths(&self) -> Result<HashSet<String>> {
+        let mut stmt = self.conn.prepare("select filepath from games")?;
+        let rows = stmt.query_map([], |row| row.get(0))?;
+        let mut set: HashSet<String> = HashSet::new();
+        for row in rows {
+            if let Ok(row) = row {
+                set.insert(row);
+            }
+        }
+
+        Ok(set)
     }
 
     pub fn insert_entries(&mut self, entries: &Vec<GameEntry>) -> Result<u32> {

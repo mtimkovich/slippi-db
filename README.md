@@ -1,10 +1,10 @@
 # 🐸 Slippi DB
 
-Slippi DB ingests Slippi replays and sends the data to an SQLite database for easier parsing.
+Slippi DB ingests [Slippi replays][slippi] and puts the data in an SQLite database for easier parsing.
 
-The primary goal of this project is to make it easier to perform analysis of Slippi files by putting them in a more structured format. My end goal is to create something similar to [Ballchasing's API][ballchasing] for Rocket League but for Melee.
+The primary goal of this project is to make it easier to perform analysis of Slippi files by putting them in a more structured format. The end goal is to create something similar to [Ballchasing's API][ballchasing] but for Melee.
 
-Written in Rust and using [Peppi][peppi], slippi-db can parse a couple gigabytes of Slippi files in a couple seconds.
+Written in Rust and using [Peppi][peppi], slippi-db can parse gigabytes worth of Slippi files in a couple seconds.
 
 ⚠️ Under construction.
 
@@ -28,8 +28,9 @@ $ sqlite3 slippi.db < examples/example.sql
 ## 🚧 Roadmap
 
 - [x] Write data to SQLite DB.
-- [ ] Check the filelist for new files.
+- [x] Check the filelist for new files.
 - [ ] Save player data.
+- [ ] Create more example SQLs.
 - [x] Detect the winner(s).
   - [ ] Discard short matches (<30s).
   - [ ] Handle tiebreaks.
@@ -42,6 +43,7 @@ $ sqlite3 slippi.db < examples/example.sql
 
 PRs welcome!
 
+[slippi]: https://github.com/project-slippi/slippi-wiki/blob/master/SPEC.md
 [peppi]: https://github.com/hohav/peppi
 [ballchasing]: https://ballchasing.com/doc/api#replays-replays-get
 [twitter]: https://twitter.com/DJSwerveGG
