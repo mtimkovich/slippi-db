@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use chrono::{DateTime, Utc};
 use clap::{crate_version, AppSettings, Clap};
 use peppi::game::Game;
@@ -64,24 +64,20 @@ pub struct GameEntry {
 }
 
 impl GameEntry {
-    pub fn new(game: &Game, filepath: &str) -> Option<Self> {
-        let duration = game.metadata.duration.and_then(|time| {
-            let time = time as f32 / 3600.;
-            if time < 0.5 {
-                return None;
-            }
-
-            Some(time)
-        });
+    pub fn new(game: &Game, filepath: &str) -> Result<Self> {
+        let duration = game.metadata.duration.and_then(|t| Some(t as f32 / 3600.));
         let start_time = game.metadata.date;
         let stage = stage::name(game.start.stage);
 
         if duration.is_none() || start_time.is_none() || stage.is_none() {
-            warn!("{}: error parsing game, skipping.", filepath);
-            return None;
+            return Err(anyhow!("{}: error parsing game, skipping.", filepath));
         }
 
-        Some(GameEntry {
+        if duration.unwrap() < 0.5 {
+            return Err(anyhow!("{}: game < 30s, skipping.", filepath));
+        }
+
+        Ok(GameEntry {
             filepath: filepath.to_string(),
             is_teams: game.start.is_teams,
             duration: duration.unwrap(),
@@ -100,7 +96,13 @@ fn parse_replay(path: String) -> Option<GameEntry> {
         }
     };
 
-    GameEntry::new(&game, &path)
+    match GameEntry::new(&game, &path) {
+        Ok(entry) => Some(entry),
+        Err(e) => {
+            warn!("{}", e);
+            return None;
+        }
+    }
 }
 
 fn main() -> Result<()> {
