@@ -65,24 +65,22 @@ pub struct GameEntry {
 
 impl GameEntry {
     pub fn new(game: &Game, filepath: &str) -> Result<Self> {
-        let duration = game.metadata.duration.and_then(|t| Some(t as f32 / 3600.));
-        let start_time = game.metadata.date;
-        let stage = stage::name(game.start.stage);
+        let mut duration = game.metadata.duration.ok_or(anyhow!("no duration"))? as f32;
+        let start_time = game.metadata.date.ok_or(anyhow!("no start_time"))?;
+        let stage = stage::name(game.start.stage).ok_or(anyhow!("invalid stage"))?;
 
-        if duration.is_none() || start_time.is_none() || stage.is_none() {
-            return Err(anyhow!("{}: error parsing game, skipping.", filepath));
-        }
+        duration /= 3600.;
 
-        if duration.unwrap() < 0.5 {
-            return Err(anyhow!("{}: game < 30s, skipping.", filepath));
+        if duration < 0.5 {
+            return Err(anyhow!("game < 30s, skipping."));
         }
 
         Ok(GameEntry {
             filepath: filepath.to_string(),
             is_teams: game.start.is_teams,
-            duration: duration.unwrap(),
-            start_time: start_time.unwrap(),
-            stage: stage.unwrap().to_string(),
+            duration,
+            start_time,
+            stage: stage.to_string(),
         })
     }
 }
@@ -99,7 +97,7 @@ fn parse_replay(path: String) -> Option<GameEntry> {
     match GameEntry::new(&game, &path) {
         Ok(entry) => Some(entry),
         Err(e) => {
-            warn!("{}", e);
+            warn!("{}: {}", path, e);
             return None;
         }
     }
