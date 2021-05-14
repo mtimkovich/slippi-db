@@ -54,7 +54,7 @@ impl DB {
 
             match result {
                 Ok(_) => inserts += 1,
-                Err(e) => eprintln!("{}: {}", e, entry.filepath),
+                Err(e) => warn!("{}: {}", e, entry.filepath),
             }
         }
 

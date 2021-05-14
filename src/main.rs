@@ -1,15 +1,17 @@
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Utc};
 use clap::{crate_version, AppSettings, Clap};
+use env_logger::Builder;
+use log::LevelFilter;
 use peppi::game::Game;
 use rayon::prelude::*;
-use std::env;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
 
 #[macro_use]
 extern crate log;
 
+mod players;
 mod sql;
 mod stage;
 
@@ -27,9 +29,6 @@ struct Opts {
     /// Set output database file
     #[clap(short, long, default_value = "slippi.db")]
     output_db: String,
-    /// Show error messages
-    #[clap(short, long)]
-    verbose: bool,
 }
 
 fn is_slp(entry: &DirEntry) -> Option<PathBuf> {
@@ -79,6 +78,8 @@ impl GameEntry {
             return Err(anyhow!("game < 30s"));
         }
 
+        println!("{:?}", players::player_states(game));
+
         Ok(GameEntry {
             filepath: filepath.to_string(),
             is_teams: game.start.is_teams,
@@ -109,25 +110,28 @@ fn parse_replay(path: String) -> Option<GameEntry> {
 
 fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
-    env::set_var("RUST_LOG", if opts.verbose { "info" } else { "error" });
-    env_logger::init();
+    Builder::new().filter_level(LevelFilter::Info).init();
 
     let files = get_slippis(&opts.directories)?;
+    info!("Found {} Slippi files.", files.len());
+
     let mut db = sql::DB::new(&opts.output_db)?;
     let diff = db.compare_filepaths(&files)?;
 
     {
         let duplicates = files.len() - diff.len();
         if duplicates > 0 {
-            println!("{} replays already in database, skipping.", duplicates);
+            info!("{} replays already in database, skipping.", duplicates);
         }
     }
 
     // Parse replays in parallel.
     let entries: Vec<GameEntry> = diff.into_par_iter().filter_map(parse_replay).collect();
 
-    let inserts = db.insert_entries(&entries)?;
-    println!("Added {} Slippi files.", inserts);
+    if false {
+        let inserts = db.insert_entries(&entries)?;
+        info!("Added {} Slippi files.", inserts);
+    }
 
     Ok(())
 }

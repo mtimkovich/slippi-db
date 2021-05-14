@@ -15,5 +15,4 @@ log = "0.4.0"
 peppi = { git = "https://github.com/hohav/peppi" }
 rayon = "1.5.0"
 rusqlite = { version = "0.25.1", features = ["chrono"] }
-strum = "0.20"
 walkdir = "2.3.2"

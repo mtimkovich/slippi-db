@@ -1,27 +1,19 @@
-// use std::collections::HashMap;
-// use peppi::ubjson::Object;
-// use peppi::frame::Post;
-// use peppi::game::{Game, TeamColor};
+use peppi::frame::Post;
+use peppi::game::{Game, TeamColor};
+use peppi::ubjson::Object;
+use std::collections::HashMap;
 
-#[allow(dead_code)]
 #[derive(Debug)]
-struct Player<'a> {
+pub struct Player<'a> {
     code: &'a String,
     tag: &'a String,
+    port: u8,
     stocks: u8,
     team: Option<TeamColor>,
     damage: f32,
 }
 
-#[allow(dead_code)]
-impl<'a> AsRef<Player<'a>> for Player<'a> {
-    fn as_ref(&self) -> &Self {
-        self
-    }
-}
-
-/// Get the game state in the last frame.
-#[allow(dead_code)]
+/// Get the game state on the last frame.
 fn last_frame(game: &Game, port: usize) -> Option<&Post> {
     return game
         .ports
@@ -30,12 +22,10 @@ fn last_frame(game: &Game, port: usize) -> Option<&Post> {
         .and_then(|p| p.leader.post.last());
 }
 
-#[allow(dead_code)]
 fn tag_map(game: &Game, port: usize) -> Option<&HashMap<String, Object>> {
     let port = port.to_string();
     let players = game.metadata.json.get("players")?;
     if let Object::Map(hm) = players {
-        // TODO: Check if this port exists.
         if let Object::Map(n) = hm.get(&port)? {
             if let Object::Map(netplay) = n.get("names")? {
                 return Some(netplay);
@@ -46,7 +36,6 @@ fn tag_map(game: &Game, port: usize) -> Option<&HashMap<String, Object>> {
     None
 }
 
-#[allow(dead_code)]
 fn get_tag<'a>(key: &'a str, tags: &'a HashMap<String, Object>) -> Option<&'a String> {
     match tags.get(key)? {
         Object::Str(s) => Some(s),
@@ -54,7 +43,6 @@ fn get_tag<'a>(key: &'a str, tags: &'a HashMap<String, Object>) -> Option<&'a St
     }
 }
 
-#[allow(dead_code)]
 fn team(game: &Game, port: usize) -> Option<TeamColor> {
     game.start.players.get(port).and_then(|p| {
         p.as_ref()
@@ -64,26 +52,37 @@ fn team(game: &Game, port: usize) -> Option<TeamColor> {
 }
 
 /// Gets the state of all players on the last frame of the game.
-// TODO: Calculate how long the game lasted.
-#[allow(dead_code)]
-fn player_states(game: &Game) -> Option<Vec<Player>> {
+pub fn player_states(game: &Game) -> Vec<Player> {
     let mut players = Vec::new();
 
     for port in 0..4 {
         if let Some(post) = last_frame(&game, port) {
-            let tags = tag_map(&game, port)?;
+            let tags = tag_map(&game, port);
+
+            if tags.is_none() {
+                continue;
+            }
+
+            let tags = tags.unwrap();
+            let code = get_tag("code", tags);
+            let tag = get_tag("netplay", tags);
+
+            if code.is_none() || tag.is_none() {
+                continue;
+            }
 
             players.push(Player {
+                port: port as u8,
                 stocks: post.stocks,
                 damage: post.damage,
-                code: get_tag("code", tags)?,
-                tag: get_tag("netplay", tags)?,
+                code: code.unwrap(),
+                tag: tag.unwrap(),
                 team: team(&game, port),
             });
         }
     }
 
-    Some(players)
+    players
 }
 
 /// Checks if the living players are all on the same team.
@@ -139,13 +138,4 @@ fn determine_winners<'a>(players: &'a Vec<Player>) -> Option<Vec<&'a Player<'a>>
     // println!("WARNING: 2+ players, not on the same team.");
     // println!("\t{:?}", living);
     None
-}
-
-/// Checks if player's tag is in vector of players.
-#[allow(dead_code)]
-fn has_player<'a, P: AsRef<Player<'a>>>(players: &Vec<P>, tag: &str) -> bool {
-    players
-        .iter()
-        .find(|p| p.as_ref().tag.to_lowercase() == tag.to_lowercase())
-        .is_some()
 }
