@@ -12,6 +12,7 @@ use walkdir::{DirEntry, WalkDir};
 extern crate log;
 
 mod players;
+use players::Player;
 mod sql;
 mod stage;
 
@@ -63,6 +64,7 @@ pub struct GameEntry {
     duration: f32,
     stage: String,
     start_time: DateTime<Utc>,
+    players: Vec<Player>,
 }
 
 impl GameEntry {
@@ -78,12 +80,11 @@ impl GameEntry {
             return Err(anyhow!("game < 30s"));
         }
 
-        println!("{:?}", players::player_states(game));
-
         Ok(GameEntry {
             filepath: filepath.to_string(),
             is_teams: game.start.is_teams,
             duration,
+            players: players::player_states(game),
             start_time,
             stage: stage.to_string(),
         })
@@ -128,10 +129,8 @@ fn main() -> Result<()> {
     // Parse replays in parallel.
     let entries: Vec<GameEntry> = diff.into_par_iter().filter_map(parse_replay).collect();
 
-    if false {
-        let inserts = db.insert_entries(&entries)?;
-        info!("Added {} Slippi files.", inserts);
-    }
+    // let inserts = db.insert_entries(&entries)?;
+    // info!("Added {} Slippi files.", inserts);
 
     Ok(())
 }

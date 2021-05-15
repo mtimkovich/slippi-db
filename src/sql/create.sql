@@ -29,12 +29,16 @@ create table if not exists games (
     foreign key(port3) references players(id),
     foreign key(port4) references players(id)
 );
+*/
 
 create table if not exists players (
     id integer primary key not null,
     tag text not null,
     code text not null,
     -- `character` is a reserved word lol
-    fighter text not null
+    fighter text not null,
+    port integer not null,
+    stocks integer not null,
+    damage real not null,
+    team integer
 );
-*/
