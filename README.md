@@ -2,7 +2,7 @@
 
 Slippi DB ingests [Slippi replays][slippi] and puts the data into a SQLite database for easier parsing.
 
-The primary goal of this project is to make it easier to analyze large amounts of Slippi data. The end goal is to create something similar to [Ballchasing.com][ballchasing] but for Melee.
+The primary goal of this project is to make it easier to analyze large amounts of Slippi data. Its end goal is to create something similar to [Ballchasing.com][ballchasing] but for Melee.
 
 Written in [Rust][rust] using [Peppi][peppi], Slippi DB can parse gigabytes worth of Slippi files in a couple seconds.
 
@@ -38,7 +38,7 @@ $ cargo build --release
 There's some examples of what is possible in the `examples/` directory. This is good starting point, especially if you're not familiar with SQL. These can be run via:
 
 ```shell
-$ sqlite3 slippi.db < examples/example.sql
+$ sqlite3 slippi.db < examples/hours_played.sql
 ```
 
 *If you come up with a cool query, make a PR and I'll add it to the examples!*
