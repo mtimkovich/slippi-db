@@ -17,7 +17,7 @@ create table if not exists players (
     stocks integer not null,
     damage real not null,
     team text,
-    -- winner boolean not null,
+    winner boolean not null,
 
     foreign key(game_id) references game(id) on delete cascade
 );

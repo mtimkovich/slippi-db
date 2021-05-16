@@ -1,7 +1,9 @@
 use crate::enums;
+use anyhow::{anyhow, Result};
 use peppi::frame::Post;
 use peppi::game::Game;
 use peppi::ubjson::Object;
+use std::cell::Cell;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -13,6 +15,7 @@ pub struct Player {
     pub character: Option<String>,
     pub team: Option<String>,
     pub damage: f32,
+    pub winner: Cell<bool>,
 }
 
 /// Get the game state on the last frame.
@@ -81,13 +84,14 @@ pub fn player_states(game: &Game) -> Vec<Player> {
             }
 
             players.push(Player {
-                port: port as u8,
+                port: (port + 1) as u8,
                 stocks: post.stocks,
                 damage: post.damage,
                 code: code.unwrap().to_string(),
                 tag: tag.unwrap().to_string(),
                 team: team(&game, port),
                 character: character(&game, port),
+                winner: Cell::new(false),
             });
         }
     }
@@ -96,8 +100,7 @@ pub fn player_states(game: &Game) -> Vec<Player> {
 }
 
 // /// Checks if the living players are all on the same team.
-// #[allow(dead_code)]
-// fn on_same_team(living: &Vec<&Player>) -> bool {
+// fn on_same_team(living: &Vec<Player>) -> bool {
 //     let winner = living.get(0);
 //     if let Some(winner) = winner {
 //         let winning_team = winner.team;
@@ -112,40 +115,40 @@ pub fn player_states(game: &Game) -> Vec<Player> {
 //     }
 // }
 
-// /** Steps for determining winners.
-//  *
-//  * 1. Remove players with 0 stocks.
-//  * 2. If 1 player:
-//  *    a. If team, find their teammate.
-//  *    b. else player is only winner.
-//  * 3. If 2 or more players:
-//  *    a. if same team (2 players), return both of them.
-//  *    b. else compare stocks and damage.
-//  */
-// #[allow(dead_code)]
-// fn determine_winners<'a>(players: &'a Vec<Player>) -> Option<Vec<&'a Player<'a>>> {
-//     let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
+/** Steps for determining winners.
+ *
+ * 1. Remove players with 0 stocks.
+ * 2. If 1 player:
+ *    a. If team, find their teammate.
+ *    b. else player is only winner.
+ * 3. If 2 or more players:
+ *    a. if same team (2 players), return both of them.
+ *    b. else compare stocks and damage.
+ */
+pub fn determine_winners(players: &Vec<Player>) -> Result<()> {
+    let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
 
-//     if living.len() == 1 {
-//         if let Some(team) = living[0].team {
-//             // Find teammate.
-//             let info = players
-//                 .iter()
-//                 .filter(|p| match p.team {
-//                     Some(t) => t == team,
-//                     _ => false,
-//                 })
-//                 .collect::<Vec<_>>();
-//             return Some(info);
-//         } else {
-//             return Some(living);
-//         }
-//     } else if on_same_team(&living) {
-//         return Some(living);
-//     }
+    match living.len() {
+        0 => Err(anyhow!("invalid player state")),
+        1 => {
+            living[0].winner.set(true);
 
-//     // TODO: Handle rage-quits. Sorry, Future Max!
-//     // println!("WARNING: 2+ players, not on the same team.");
-//     // println!("\t{:?}", living);
-//     None
-// }
+            // Check for teammates.
+            if let Some(team) = &living[0].team {
+                players
+                    .iter()
+                    .filter(|p| match &p.team {
+                        Some(t) => t == team,
+                        _ => false,
+                    })
+                    .for_each(|t| t.winner.set(true));
+            }
+
+            Ok(())
+        }
+        _ => {
+            // TODO: Handle rage-quits. Sorry, Future Max!
+            Err(anyhow!("2+ players, not on the same team: {:?}", living))
+        }
+    }
+}

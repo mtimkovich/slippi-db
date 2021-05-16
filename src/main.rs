@@ -12,7 +12,7 @@ use walkdir::{DirEntry, WalkDir};
 extern crate log;
 
 mod players;
-use players::Player;
+use players::{determine_winners, player_states, Player};
 mod enums;
 mod sql;
 
@@ -80,11 +80,17 @@ impl GameEntry {
             return Err(anyhow!("game < 30s"));
         }
 
+        let players = player_states(game);
+        let result = determine_winners(&players);
+        if let Some(err) = result.err() {
+            return Err(err);
+        }
+
         Ok(GameEntry {
             filepath: filepath.to_string(),
             is_teams: game.start.is_teams,
             duration,
-            players: players::player_states(game),
+            players,
             start_time,
             stage,
         })
