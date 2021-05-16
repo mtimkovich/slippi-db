@@ -1,5 +1,4 @@
 use crate::enums;
-use peppi::character;
 use peppi::frame::Post;
 use peppi::game::Game;
 use peppi::ubjson::Object;
@@ -11,8 +10,7 @@ pub struct Player {
     pub tag: String,
     pub port: u8,
     pub stocks: u8,
-    // TODO: Change these from peppi enums to native.
-    pub character: Option<character::External>,
+    pub character: Option<String>,
     pub team: Option<String>,
     pub damage: f32,
 }
@@ -55,11 +53,11 @@ fn team(game: &Game, port: usize) -> Option<String> {
     })
 }
 
-fn character(game: &Game, port: usize) -> Option<character::External> {
+fn character(game: &Game, port: usize) -> Option<String> {
     game.start
         .players
         .get(port)
-        .and_then(|p| p.as_ref().and_then(|p| Some(p.character)))
+        .and_then(|p| p.as_ref().and_then(|p| enums::character(p.character)))
 }
 
 /// Gets the state of all players on the last frame of the game.

@@ -12,7 +12,7 @@ create table if not exists players (
     game_id integer not null,
     tag text not null,
     code text not null,
-    -- character text not null,
+    character text not null,
     port integer not null,
     stocks integer not null,
     damage real not null,

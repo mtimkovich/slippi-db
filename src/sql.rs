@@ -73,8 +73,8 @@ impl DB {
 fn insert_players(tx: &Transaction, players: &Vec<Player>, game_id: i64) -> Result<()> {
     for player in players {
         let result = tx.execute(
-            "insert into players (game_id, tag, code, port, stocks, damage, team)
-                values (?, ?, ?, ?, ?, ?, ?)",
+            "insert into players (game_id, tag, code, port, stocks, damage, team, character)
+                values (?, ?, ?, ?, ?, ?, ?, ?)",
             params![
                 game_id,
                 player.tag,
@@ -83,6 +83,7 @@ fn insert_players(tx: &Transaction, players: &Vec<Player>, game_id: i64) -> Resu
                 player.stocks,
                 player.damage,
                 player.team,
+                player.character,
             ],
         );
 
