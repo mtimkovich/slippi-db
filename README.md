@@ -2,17 +2,35 @@
 
 Slippi DB ingests [Slippi replays][slippi] and puts the data into a SQLite database for easier parsing.
 
-The primary goal of this project is to make it easier to analyze large amounts of Slippi data. The end goal is to have something similar to [Ballchasing's API][ballchasing] but for Melee.
+The primary goal of this project is to make it easier to analyze large amounts of Slippi data. The end goal is to create something similar to [Ballchasing.com][ballchasing] but for Melee.
 
 Written in [Rust][rust] using [Peppi][peppi], Slippi DB can parse gigabytes worth of Slippi files in a couple seconds.
 
-## ⌨️ Usage
+## Usage
+
+```
+USAGE:
+    slippi-db [OPTIONS] <directories>...
+
+ARGS:
+    <directories>...    Directories to search for .slp files in
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -o, --output-db <output-db>    Set output database file [default: slippi.db]
+```
+
+## Building
+
+- Requires `libsqlite3-dev` or whatever your system's equivalent is.
 
 ```shell
 $ git clone https://github.com/mtimkovich/slippi-db
 $ cd slippi-db
-$ cargo install --path .
-$ slippi-db SLIPPI_FOLDER
+$ cargo build --release
 ```
 
 ## 🗒️ Examples
@@ -23,12 +41,14 @@ There's some examples of what is possible in the `examples/` directory. This is 
 $ sqlite3 slippi.db < examples/example.sql
 ```
 
+*If you come up with a cool query, make a PR and I'll add it to the examples!*
+
 ## 🚧 Roadmap
 
 - [x] Write data to SQLite DB.
 - [x] Check the filelist for new files.
-- [ ] Save player data.
-- [ ] Create more SQL examples.
+- [x] Save player data.
+- [x] Create more SQL examples.
 - [x] Detect the winner(s).
   - [x] Discard short matches (<30s).
   - [ ] Handle tiebreaks.
@@ -45,5 +65,5 @@ PRs welcome!
 [slippi]: https://github.com/project-slippi/slippi-wiki/blob/master/SPEC.md
 [peppi]: https://github.com/hohav/peppi
 [rust]: https://www.rust-lang.org/
-[ballchasing]: https://ballchasing.com/doc/api#replays-replays-get
+[ballchasing]: https://ballchasing.com
 [twitter]: https://twitter.com/DJSwerveGG
