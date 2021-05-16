@@ -52,12 +52,12 @@ impl DB {
                 ],
             );
 
-            if let Some(err) = result.err() {
-                warn!("{}", err);
+            if let Some(e) = result.err() {
+                warn!("{}: {}", e, entry.filepath);
                 continue;
             }
 
-            let result = insert_players(&tx, &entry.players);
+            let result = insert_players(&tx, &entry.players, tx.last_insert_rowid());
 
             match result {
                 Ok(_) => inserts += 1,
@@ -70,12 +70,13 @@ impl DB {
     }
 }
 
-fn insert_players(tx: &Transaction, players: &Vec<Player>) -> Result<()> {
+fn insert_players(tx: &Transaction, players: &Vec<Player>, game_id: i64) -> Result<()> {
     for player in players {
         let result = tx.execute(
             "insert into players (game_id, tag, code, port, stocks, damage)
-                values (last_insert_rowid(), ?, ?, ?, ?, ?)",
+                values (?, ?, ?, ?, ?, ?)",
             params![
+                game_id,
                 player.tag,
                 player.code,
                 player.port,
