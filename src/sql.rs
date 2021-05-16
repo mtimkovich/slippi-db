@@ -1,6 +1,6 @@
-use crate::GameEntry;
+use crate::{GameEntry, Player};
 use anyhow::Result;
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, Transaction};
 use std::collections::HashSet;
 use std::path::PathBuf;
 
@@ -52,6 +52,13 @@ impl DB {
                 ],
             );
 
+            if let Some(err) = result.err() {
+                warn!("{}", err);
+                continue;
+            }
+
+            let result = insert_players(&tx, &entry.players);
+
             match result {
                 Ok(_) => inserts += 1,
                 Err(e) => warn!("{}: {}", e, entry.filepath),
@@ -61,4 +68,26 @@ impl DB {
         tx.commit()?;
         Ok(inserts)
     }
+}
+
+fn insert_players(tx: &Transaction, players: &Vec<Player>) -> Result<()> {
+    for player in players {
+        let result = tx.execute(
+            "insert into players (game_id, tag, code, port, stocks, damage)
+                values (last_insert_rowid(), ?, ?, ?, ?, ?)",
+            params![
+                player.tag,
+                player.code,
+                player.port,
+                player.stocks,
+                player.damage,
+            ],
+        );
+
+        if let Some(err) = result.err() {
+            warn!("{}", err);
+        }
+    }
+
+    Ok(())
 }

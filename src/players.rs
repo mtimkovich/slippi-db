@@ -3,14 +3,15 @@ use peppi::game::{Game, TeamColor};
 use peppi::ubjson::Object;
 use std::collections::HashMap;
 
+// TODO: Add character.
 #[derive(Debug)]
 pub struct Player {
-    code: String,
-    tag: String,
-    port: u8,
-    stocks: u8,
-    team: Option<TeamColor>,
-    damage: f32,
+    pub code: String,
+    pub tag: String,
+    pub port: u8,
+    pub stocks: u8,
+    pub team: Option<TeamColor>,
+    pub damage: f32,
 }
 
 /// Get the game state on the last frame.

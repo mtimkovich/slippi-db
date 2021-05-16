@@ -129,8 +129,8 @@ fn main() -> Result<()> {
     // Parse replays in parallel.
     let entries: Vec<GameEntry> = diff.into_par_iter().filter_map(parse_replay).collect();
 
-    // let inserts = db.insert_entries(&entries)?;
-    // info!("Added {} Slippi files.", inserts);
+    let inserts = db.insert_entries(&entries)?;
+    info!("Added {} Slippi files.", inserts);
 
     Ok(())
 }
