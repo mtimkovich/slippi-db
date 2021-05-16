@@ -1,16 +1,19 @@
+use crate::enums;
+use peppi::character;
 use peppi::frame::Post;
-use peppi::game::{Game, TeamColor};
+use peppi::game::Game;
 use peppi::ubjson::Object;
 use std::collections::HashMap;
 
-// TODO: Add character.
 #[derive(Debug)]
 pub struct Player {
     pub code: String,
     pub tag: String,
     pub port: u8,
     pub stocks: u8,
-    pub team: Option<TeamColor>,
+    // TODO: Change these from peppi enums to native.
+    pub character: Option<character::External>,
+    pub team: Option<String>,
     pub damage: f32,
 }
 
@@ -44,12 +47,19 @@ fn get_tag<'a>(key: &'a str, tags: &'a HashMap<String, Object>) -> Option<&'a St
     }
 }
 
-fn team(game: &Game, port: usize) -> Option<TeamColor> {
+fn team(game: &Game, port: usize) -> Option<String> {
     game.start.players.get(port).and_then(|p| {
         p.as_ref()
             .and_then(|p| p.team.as_ref())
-            .and_then(|t| Some(t.color))
+            .and_then(|t| enums::team(t.color))
     })
+}
+
+fn character(game: &Game, port: usize) -> Option<character::External> {
+    game.start
+        .players
+        .get(port)
+        .and_then(|p| p.as_ref().and_then(|p| Some(p.character)))
 }
 
 /// Gets the state of all players on the last frame of the game.
@@ -79,6 +89,7 @@ pub fn player_states(game: &Game) -> Vec<Player> {
                 code: code.unwrap().to_string(),
                 tag: tag.unwrap().to_string(),
                 team: team(&game, port),
+                character: character(&game, port),
             });
         }
     }
@@ -86,22 +97,22 @@ pub fn player_states(game: &Game) -> Vec<Player> {
     players
 }
 
-/// Checks if the living players are all on the same team.
-#[allow(dead_code)]
-fn on_same_team(living: &Vec<&Player>) -> bool {
-    let winner = living.get(0);
-    if let Some(winner) = winner {
-        let winning_team = winner.team;
-        living
-            .iter()
-            .all(|player| match (player.team, winning_team) {
-                (Some(a), Some(b)) => a == b,
-                _ => false,
-            })
-    } else {
-        false
-    }
-}
+// /// Checks if the living players are all on the same team.
+// #[allow(dead_code)]
+// fn on_same_team(living: &Vec<&Player>) -> bool {
+//     let winner = living.get(0);
+//     if let Some(winner) = winner {
+//         let winning_team = winner.team;
+//         living
+//             .iter()
+//             .all(|player| match (player.team, winning_team) {
+//                 (Some(a), Some(b)) => a == b,
+//                 _ => false,
+//             })
+//     } else {
+//         false
+//     }
+// }
 
 // /** Steps for determining winners.
 //  *

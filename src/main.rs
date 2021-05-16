@@ -13,8 +13,8 @@ extern crate log;
 
 mod players;
 use players::Player;
+mod enums;
 mod sql;
-mod stage;
 
 /// Create SQLite database from Slippi replays
 #[derive(Clap)]
@@ -71,7 +71,7 @@ impl GameEntry {
     pub fn new(game: &Game, filepath: &str) -> Result<Self> {
         let mut duration = game.metadata.duration.ok_or(anyhow!("no duration"))? as f32;
         let start_time = game.metadata.date.ok_or(anyhow!("no start_time"))?;
-        let stage = stage::name(game.start.stage).ok_or(anyhow!("invalid stage"))?;
+        let stage = enums::stage(game.start.stage).ok_or(anyhow!("invalid stage"))?;
 
         // frames to minutes
         duration /= 3600.;
@@ -86,7 +86,7 @@ impl GameEntry {
             duration,
             players: players::player_states(game),
             start_time,
-            stage: stage.to_string(),
+            stage,
         })
     }
 }

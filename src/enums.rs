@@ -1,7 +1,9 @@
+use peppi::game::TeamColor;
 use peppi::stage::Stage;
 
 // I'd like to apologize for this code.
-pub fn name(stage: Stage) -> Option<&'static str> {
+// TODO: macros?
+pub fn stage(stage: Stage) -> Option<String> {
     let name = match stage {
         Stage::FOUNTAIN_OF_DREAMS => "FOUNTAIN_OF_DREAMS",
         Stage::POKEMON_STADIUM => "POKEMON_STADIUM",
@@ -37,7 +39,22 @@ pub fn name(stage: Stage) -> Option<&'static str> {
     };
 
     if name != "" {
-        return Some(name);
+        return Some(name.to_string());
+    } else {
+        return None;
+    }
+}
+
+pub fn team(team: TeamColor) -> Option<String> {
+    let name = match team {
+        TeamColor::RED => "RED",
+        TeamColor::BLUE => "BLUE",
+        TeamColor::GREEN => "GREEN",
+        _ => "",
+    };
+
+    if name != "" {
+        return Some(name.to_string());
     } else {
         return None;
     }
