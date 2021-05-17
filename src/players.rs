@@ -99,21 +99,21 @@ pub fn player_states(game: &Game) -> Vec<Player> {
     players
 }
 
-// /// Checks if the living players are all on the same team.
-// fn on_same_team(living: &Vec<Player>) -> bool {
-//     let winner = living.get(0);
-//     if let Some(winner) = winner {
-//         let winning_team = winner.team;
-//         living
-//             .iter()
-//             .all(|player| match (player.team, winning_team) {
-//                 (Some(a), Some(b)) => a == b,
-//                 _ => false,
-//             })
-//     } else {
-//         false
-//     }
-// }
+/// Checks if the living players are all on the same team.
+fn on_same_team(living: &Vec<Player>) -> bool {
+    let winner = living.get(0);
+    if let Some(winner) = winner {
+        let winning_team = winner.team.as_ref();
+        living
+            .iter()
+            .all(|player| match (&player.team, winning_team) {
+                (Some(a), Some(b)) => a == b,
+                _ => false,
+            })
+    } else {
+        false
+    }
+}
 
 /** Steps for determining winners.
  *
@@ -128,27 +128,30 @@ pub fn player_states(game: &Game) -> Vec<Player> {
 pub fn determine_winners(players: &Vec<Player>) -> Result<()> {
     let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
 
-    match living.len() {
-        0 => Err(anyhow!("invalid player state")),
-        1 => {
-            living[0].winner.set(true);
-
-            // Check for teammates.
-            if let Some(team) = &living[0].team {
-                players
-                    .iter()
-                    .filter(|p| match &p.team {
-                        Some(t) => t == team,
-                        _ => false,
-                    })
-                    .for_each(|t| t.winner.set(true));
-            }
-
-            Ok(())
-        }
-        _ => {
-            // TODO: Handle rage-quits. Sorry, Future Max!
-            Err(anyhow!("2+ players, not on the same team: {:?}", living))
-        }
+    if living.len() == 0 {
+        return Err(anyhow!("invalid player state"));
     }
+
+    if living.len() == 1 {
+        living[0].winner.set(true);
+        return Ok(());
+    }
+
+    if living.len() > 2 && on_same_team(players) {
+        // Check for teammates.
+        if let Some(team) = &living[0].team {
+            players
+                .iter()
+                .filter(|p| match &p.team {
+                    Some(t) => t == team,
+                    _ => false,
+                })
+                .for_each(|t| t.winner.set(true));
+        }
+
+        return Ok(());
+    }
+
+    // TODO: Handle rage-quits. Sorry, Future Max!
+    return Err(anyhow!("2+ players, not on the same team: {:?}", living));
 }

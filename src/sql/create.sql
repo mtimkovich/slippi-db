@@ -19,5 +19,5 @@ create table if not exists players (
     team text,
     winner boolean not null,
 
-    foreign key(game_id) references game(id) on delete cascade
+    foreign key(game_id) references games(id) on delete cascade
 );
