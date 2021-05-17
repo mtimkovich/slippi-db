@@ -49,7 +49,7 @@ $ sqlite3 slippi.db < examples/hours_played.sql
 - [x] Create more SQL examples.
 - [x] Detect the winner(s).
   - [x] Discard short matches (<30s).
-  - [ ] Handle tiebreaks.
+  - [x] Handle tiebreaks.
   - [ ] Detect rage-quits and assign them losses.
 - [ ] Create releases.
 

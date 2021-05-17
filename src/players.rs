@@ -4,13 +4,14 @@ use peppi::frame::Post;
 use peppi::game::Game;
 use peppi::ubjson::Object;
 use std::cell::Cell;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Player {
     pub code: String,
     pub tag: String,
-    pub port: u8,
+    pub port: usize,
     pub stocks: u8,
     pub character: Option<String>,
     pub team: Option<String>,
@@ -84,7 +85,7 @@ pub fn player_states(game: &Game) -> Vec<Player> {
             }
 
             players.push(Player {
-                port: port as u8,
+                port,
                 stocks: post.stocks,
                 damage: post.damage,
                 code: code.unwrap().to_string(),
@@ -103,16 +104,92 @@ pub fn player_states(game: &Game) -> Vec<Player> {
 fn on_same_team(living: &Vec<Player>) -> bool {
     let winner = living.get(0);
     if let Some(winner) = winner {
-        let winning_team = winner.team.as_ref();
         living
             .iter()
-            .all(|player| match (&player.team, winning_team) {
+            .all(|player| match (&player.team, &winner.team) {
                 (Some(a), Some(b)) => a == b,
                 _ => false,
             })
     } else {
         false
     }
+}
+
+#[derive(Debug)]
+struct Tiebreak {
+    stocks: u8,
+    damage: f32,
+    indices: Vec<usize>,
+    color: String,
+}
+
+impl Tiebreak {
+    fn doubles(living: &Vec<Player>) -> String {
+        let mut teams: Vec<Tiebreak> = Vec::new();
+        for (i, p) in living.iter().enumerate() {
+            let color = p.team.as_ref().unwrap();
+
+            let tb = teams.iter_mut().find(|t| t.color == *color);
+            match tb {
+                Some(mut tb) => {
+                    tb.stocks += p.stocks;
+                    tb.damage += p.damage;
+                    tb.indices.push(i);
+                }
+                None => teams.push(Tiebreak {
+                    stocks: p.stocks,
+                    damage: p.damage,
+                    color: p.team.as_ref().unwrap().to_string(),
+                    indices: vec![i],
+                }),
+            }
+        }
+
+        teams.sort_by(|a, b| {
+            if a.stocks > b.stocks {
+                return Ordering::Less;
+            } else if living[0].stocks < living[1].stocks {
+                return Ordering::Greater;
+            } else {
+                if living[0].damage < living[1].damage {
+                    return Ordering::Less;
+                } else {
+                    return Ordering::Greater;
+                }
+            }
+        });
+
+        return teams[0].color.clone();
+    }
+
+    fn singles(living: &Vec<Player>) {
+        let port;
+
+        if living[0].stocks > living[1].stocks {
+            port = 0;
+        } else if living[0].stocks < living[1].stocks {
+            port = 1;
+        } else {
+            if living[0].damage > living[1].damage {
+                port = 1;
+            } else {
+                port = 0;
+            }
+        }
+
+        living[port].winner.set(true);
+    }
+}
+
+/// Make everyone on `team_color` a winner.
+fn set_team_winners(team_color: &str, players: &Vec<Player>) {
+    players
+        .iter()
+        .filter(|p| match &p.team {
+            Some(t) => t == team_color,
+            _ => false,
+        })
+        .for_each(|t| t.winner.set(true));
 }
 
 /** Steps for determining winners.
@@ -125,8 +202,12 @@ fn on_same_team(living: &Vec<Player>) -> bool {
  *    a. if same team (2 players), return both of them.
  *    b. else compare stocks and damage.
  */
-pub fn determine_winners(players: &Vec<Player>) -> Result<()> {
-    let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
+pub fn determine_winners(players: &Vec<Player>, is_teams: bool) -> Result<()> {
+    let living: Vec<Player> = players
+        .into_iter()
+        .filter(|p| p.stocks > 0)
+        .cloned()
+        .collect();
 
     if living.len() == 0 {
         return Err(anyhow!("invalid player state"));
@@ -137,22 +218,18 @@ pub fn determine_winners(players: &Vec<Player>) -> Result<()> {
 
         // Check for teammates.
         if let Some(team) = &living[0].team {
-            players
-                .iter()
-                .filter(|p| match &p.team {
-                    Some(t) => t == team,
-                    _ => false,
-                })
-                .for_each(|t| t.winner.set(true));
+            set_team_winners(team, players);
         }
 
         return Ok(());
     }
 
-    // TODO: Handle rage-quits. Sorry, Future Max!
-    return Err(anyhow!(
-        "{} players, not on the same team: {:?}",
-        living.len(),
-        living
-    ));
+    if is_teams {
+        let color = Tiebreak::doubles(&living);
+        set_team_winners(&color, players);
+    } else {
+        Tiebreak::singles(&living);
+    }
+
+    Ok(())
 }

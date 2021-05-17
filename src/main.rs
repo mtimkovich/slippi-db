@@ -73,6 +73,7 @@ impl GameEntry {
         let mut duration = game.metadata.duration.ok_or(anyhow!("no duration"))? as f32;
         let start_time = game.metadata.date.ok_or(anyhow!("no start_time"))?;
         let stage = enums::stage(game.start.stage).ok_or(anyhow!("invalid stage"))?;
+        let is_teams = game.start.is_teams;
 
         // frames to minutes
         duration /= 3600.;
@@ -82,14 +83,14 @@ impl GameEntry {
         }
 
         let players = player_states(game);
-        let result = determine_winners(&players);
+        let result = determine_winners(&players, is_teams);
         if let Some(err) = result.err() {
             return Err(err);
         }
 
         Ok(GameEntry {
             filepath: filepath.to_string(),
-            is_teams: game.start.is_teams,
+            is_teams,
             duration,
             players,
             start_time,
