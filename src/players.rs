@@ -19,6 +19,12 @@ pub struct Player {
     pub winner: Cell<bool>,
 }
 
+impl AsRef<Player> for Player {
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
+
 /// Get the game state on the last frame.
 fn last_frame(game: &Game, port: usize) -> Option<&Post> {
     return game
@@ -124,8 +130,10 @@ struct Tiebreak {
 }
 
 impl Tiebreak {
-    fn doubles(living: &Vec<Player>) -> String {
+    fn doubles<P: AsRef<Player>>(living: &Vec<P>) -> String {
+        let living: Vec<_> = living.iter().map(|p| p.as_ref()).collect();
         let mut teams: Vec<Tiebreak> = Vec::new();
+
         for (i, p) in living.iter().enumerate() {
             let color = p.team.as_ref().unwrap();
 
@@ -162,22 +170,25 @@ impl Tiebreak {
         return teams[0].color.clone();
     }
 
-    fn singles(living: &Vec<Player>) {
-        let port;
+    // TODO: This should also use the sort logic.
+    fn singles<P: AsRef<Player>>(living: &Vec<P>) {
+        let winner;
+        let zero = living[0].as_ref();
+        let one = living[1].as_ref();
 
-        if living[0].stocks > living[1].stocks {
-            port = 0;
-        } else if living[0].stocks < living[1].stocks {
-            port = 1;
+        if zero.stocks > one.stocks {
+            winner = zero;
+        } else if zero.stocks < one.stocks {
+            winner = one;
         } else {
-            if living[0].damage > living[1].damage {
-                port = 1;
+            if zero.damage > one.damage {
+                winner = one;
             } else {
-                port = 0;
+                winner = zero;
             }
         }
 
-        living[port].winner.set(true);
+        winner.winner.set(true);
     }
 }
 
@@ -203,11 +214,7 @@ fn set_team_winners(team_color: &str, players: &Vec<Player>) {
  *    b. else compare stocks and damage.
  */
 pub fn determine_winners(players: &Vec<Player>, is_teams: bool) -> Result<()> {
-    let living: Vec<Player> = players
-        .into_iter()
-        .filter(|p| p.stocks > 0)
-        .cloned()
-        .collect();
+    let living: Vec<&Player> = players.iter().filter(|p| p.stocks > 0).collect();
 
     if living.len() == 0 {
         return Err(anyhow!("invalid player state"));
