@@ -84,7 +84,7 @@ pub fn player_states(game: &Game) -> Vec<Player> {
             }
 
             players.push(Player {
-                port: (port + 1) as u8,
+                port: port as u8,
                 stocks: post.stocks,
                 damage: post.damage,
                 code: code.unwrap().to_string(),
@@ -132,12 +132,9 @@ pub fn determine_winners(players: &Vec<Player>) -> Result<()> {
         return Err(anyhow!("invalid player state"));
     }
 
-    if living.len() == 1 {
+    if living.len() == 1 || (living.len() > 2 && on_same_team(players)) {
         living[0].winner.set(true);
-        return Ok(());
-    }
 
-    if living.len() > 2 && on_same_team(players) {
         // Check for teammates.
         if let Some(team) = &living[0].team {
             players
@@ -153,5 +150,9 @@ pub fn determine_winners(players: &Vec<Player>) -> Result<()> {
     }
 
     // TODO: Handle rage-quits. Sorry, Future Max!
-    return Err(anyhow!("2+ players, not on the same team: {:?}", living));
+    return Err(anyhow!(
+        "{} players, not on the same team: {:?}",
+        living.len(),
+        living
+    ));
 }

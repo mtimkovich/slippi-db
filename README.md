@@ -25,8 +25,6 @@ OPTIONS:
 
 ## Building
 
-- Requires `libsqlite3-dev` or whatever your system's equivalent is.
-
 ```shell
 $ git clone https://github.com/mtimkovich/slippi-db
 $ cd slippi-db
@@ -53,7 +51,7 @@ $ sqlite3 slippi.db < examples/hours_played.sql
   - [x] Discard short matches (<30s).
   - [ ] Handle tiebreaks.
   - [ ] Detect rage-quits and assign them losses.
-- [ ] Create a release.
+- [ ] Create releases.
 
 ## Bug/Feature Requests
 

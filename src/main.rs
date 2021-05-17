@@ -6,6 +6,7 @@ use log::LevelFilter;
 use peppi::game::Game;
 use rayon::prelude::*;
 use std::path::PathBuf;
+use std::time::Instant;
 use walkdir::{DirEntry, WalkDir};
 
 #[macro_use]
@@ -119,6 +120,7 @@ fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
     Builder::new().filter_level(LevelFilter::Info).init();
 
+    let now = Instant::now();
     let files = get_slippis(&opts.directories)?;
     info!("Found {} Slippi files.", files.len());
 
@@ -136,7 +138,11 @@ fn main() -> Result<()> {
     let entries: Vec<GameEntry> = diff.into_par_iter().filter_map(parse_replay).collect();
 
     let inserts = db.insert_entries(&entries)?;
-    info!("Added {} Slippi files.", inserts);
+    info!(
+        "Added {} Slippi files in {} secs.",
+        inserts,
+        now.elapsed().as_secs()
+    );
 
     Ok(())
 }
