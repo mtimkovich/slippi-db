@@ -23,7 +23,13 @@ OPTIONS:
     -o, --output-db <output-db>    Set output database file [default: slippi.db]
 ```
 
-## Building
+## Installation
+
+### Releases
+
+The easiest way to install is to download the executable from releases.
+
+### Compiling
 
 ```shell
 $ git clone https://github.com/mtimkovich/slippi-db
