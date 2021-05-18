@@ -83,7 +83,7 @@ impl GameEntry {
         }
 
         let players = player_states(game);
-        let result = determine_winners(&players, is_teams);
+        let result = determine_winners(&players);
         if let Some(err) = result.err() {
             return Err(err);
         }

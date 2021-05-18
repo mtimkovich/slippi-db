@@ -106,60 +106,48 @@ pub fn player_states(game: &Game) -> Vec<Player> {
     players
 }
 
-/// Checks if the living players are all on the same team.
-fn on_same_team(living: &Vec<Player>) -> bool {
-    let winner = living.get(0);
-    if let Some(winner) = winner {
-        living
-            .iter()
-            .all(|player| match (&player.team, &winner.team) {
-                (Some(a), Some(b)) => a == b,
-                _ => false,
-            })
-    } else {
-        false
-    }
-}
-
 #[derive(Debug)]
-struct Tiebreak {
+struct Tiebreak<'a> {
     stocks: u8,
     damage: f32,
-    indices: Vec<usize>,
-    color: String,
+    player: &'a Player,
+    team: Option<String>,
 }
 
-impl Tiebreak {
-    fn doubles<P: AsRef<Player>>(living: &Vec<P>) -> String {
+impl<'a> Tiebreak<'a> {
+    fn new<P: AsRef<Player>>(living: &Vec<P>) -> &Player {
         let living: Vec<_> = living.iter().map(|p| p.as_ref()).collect();
         let mut teams: Vec<Tiebreak> = Vec::new();
 
-        for (i, p) in living.iter().enumerate() {
-            let color = p.team.as_ref().unwrap();
-
-            let tb = teams.iter_mut().find(|t| t.color == *color);
+        for player in living {
+            let color = player.team.as_ref();
+            let tb = teams.iter_mut().find(|t| match (t.team.as_ref(), color) {
+                (Some(a), Some(b)) => a == b,
+                (None, None) => false,
+                _ => false,
+            });
             match tb {
                 Some(mut tb) => {
-                    tb.stocks += p.stocks;
-                    tb.damage += p.damage;
-                    tb.indices.push(i);
+                    tb.stocks += player.stocks;
+                    tb.damage += player.damage;
                 }
                 None => teams.push(Tiebreak {
-                    stocks: p.stocks,
-                    damage: p.damage,
-                    color: p.team.as_ref().unwrap().to_string(),
-                    indices: vec![i],
+                    stocks: player.stocks,
+                    damage: player.damage,
+                    team: color.map(|s| s.to_string()),
+                    player: player,
                 }),
             }
         }
 
+        // Bring the winner to the front of the vector.
         teams.sort_by(|a, b| {
             if a.stocks > b.stocks {
                 return Ordering::Less;
-            } else if living[0].stocks < living[1].stocks {
+            } else if a.stocks < b.stocks {
                 return Ordering::Greater;
             } else {
-                if living[0].damage < living[1].damage {
+                if a.damage < b.damage {
                     return Ordering::Less;
                 } else {
                     return Ordering::Greater;
@@ -167,28 +155,7 @@ impl Tiebreak {
             }
         });
 
-        return teams[0].color.clone();
-    }
-
-    // TODO: This should also use the sort logic.
-    fn singles<P: AsRef<Player>>(living: &Vec<P>) {
-        let winner;
-        let zero = living[0].as_ref();
-        let one = living[1].as_ref();
-
-        if zero.stocks > one.stocks {
-            winner = zero;
-        } else if zero.stocks < one.stocks {
-            winner = one;
-        } else {
-            if zero.damage > one.damage {
-                winner = one;
-            } else {
-                winner = zero;
-            }
-        }
-
-        winner.winner.set(true);
+        return teams[0].player;
     }
 }
 
@@ -213,29 +180,18 @@ fn set_team_winners(team_color: &str, players: &Vec<Player>) {
  *    a. if same team (2 players), return both of them.
  *    b. else compare stocks and damage.
  */
-pub fn determine_winners(players: &Vec<Player>, is_teams: bool) -> Result<()> {
-    let living: Vec<&Player> = players.iter().filter(|p| p.stocks > 0).collect();
+pub fn determine_winners(players: &Vec<Player>) -> Result<()> {
+    let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
 
     if living.len() == 0 {
         return Err(anyhow!("invalid player state"));
     }
 
-    if living.len() == 1 || (living.len() > 2 && on_same_team(players)) {
-        living[0].winner.set(true);
+    let winner = Tiebreak::new(&living);
+    winner.winner.set(true);
 
-        // Check for teammates.
-        if let Some(team) = &living[0].team {
-            set_team_winners(team, players);
-        }
-
-        return Ok(());
-    }
-
-    if is_teams {
-        let color = Tiebreak::doubles(&living);
-        set_team_winners(&color, players);
-    } else {
-        Tiebreak::singles(&living);
+    if let Some(team) = &winner.team {
+        set_team_winners(team, players);
     }
 
     Ok(())
