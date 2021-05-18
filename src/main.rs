@@ -83,10 +83,11 @@ impl GameEntry {
         }
 
         let players = player_states(game);
-        let result = determine_winners(&players);
-        if let Some(err) = result.err() {
-            return Err(err);
+        if players.is_empty() {
+            return Err(anyhow!("no player tags"));
         }
+
+        determine_winners(&players);
 
         Ok(GameEntry {
             filepath: filepath.to_string(),

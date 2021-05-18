@@ -1,5 +1,4 @@
 use crate::enums;
-use anyhow::{anyhow, Result};
 use peppi::frame::Post;
 use peppi::game::Game;
 use peppi::ubjson::Object;
@@ -123,7 +122,6 @@ impl<'a> Tiebreak<'a> {
             let color = player.team.as_ref();
             let tb = teams.iter_mut().find(|t| match (t.team.as_ref(), color) {
                 (Some(a), Some(b)) => a == b,
-                (None, None) => false,
                 _ => false,
             });
             match tb {
@@ -135,7 +133,7 @@ impl<'a> Tiebreak<'a> {
                     stocks: player.stocks,
                     damage: player.damage,
                     team: color.map(|s| s.to_string()),
-                    player: player,
+                    player,
                 }),
             }
         }
@@ -170,22 +168,8 @@ fn set_team_winners(team_color: &str, players: &Vec<Player>) {
         .for_each(|t| t.winner.set(true));
 }
 
-/** Steps for determining winners.
- *
- * 1. Remove players with 0 stocks.
- * 2. If 1 player:
- *    a. If team, find their teammate.
- *    b. else player is only winner.
- * 3. If 2 or more players:
- *    a. if same team (2 players), return both of them.
- *    b. else compare stocks and damage.
- */
-pub fn determine_winners(players: &Vec<Player>) -> Result<()> {
+pub fn determine_winners(players: &Vec<Player>) {
     let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
-
-    if living.len() == 0 {
-        return Err(anyhow!("invalid player state"));
-    }
 
     let winner = Tiebreak::new(&living);
     winner.winner.set(true);
@@ -193,6 +177,4 @@ pub fn determine_winners(players: &Vec<Player>) -> Result<()> {
     if let Some(team) = &winner.team {
         set_team_winners(team, players);
     }
-
-    Ok(())
 }
