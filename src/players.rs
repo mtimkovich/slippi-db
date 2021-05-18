@@ -171,6 +171,10 @@ fn set_team_winners(team_color: &str, players: &Vec<Player>) {
 
 pub fn determine_winners(players: &Vec<Player>) {
     let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
+    
+    if living.is_empty() {
+        return;
+    }
 
     let winner = Tiebreak::run(&living);
     winner.winner.set(true);
