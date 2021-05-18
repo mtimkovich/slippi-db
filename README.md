@@ -66,6 +66,9 @@ $ sqlite3 slippi.db < examples/hours_played.sql
 
 PRs welcome!
 
+## Author
+Max "DJSwerve" Timkovich
+
 [slippi]: https://github.com/project-slippi/slippi-wiki/blob/master/SPEC.md
 [peppi]: https://github.com/hohav/peppi
 [rust]: https://www.rust-lang.org/
