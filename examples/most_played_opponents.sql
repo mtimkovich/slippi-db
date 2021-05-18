@@ -13,4 +13,5 @@ select
     count(op) as cnt
 from my_games
 group by op
-order by cnt desc;
+order by cnt desc
+limit 10;

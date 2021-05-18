@@ -72,7 +72,7 @@ impl GameEntry {
     pub fn new(game: &Game, filepath: &str) -> Result<Self> {
         let mut duration = game.metadata.duration.ok_or(anyhow!("no duration"))? as f32;
         let start_time = game.metadata.date.ok_or(anyhow!("no start_time"))?;
-        let stage = enums::stage(game.start.stage).ok_or(anyhow!("invalid stage"))?;
+        let stage = enums::stage(game.start.stage).ok_or(anyhow!("no stage"))?;
         let is_teams = game.start.is_teams;
 
         // frames to minutes

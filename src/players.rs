@@ -114,7 +114,8 @@ struct Tiebreak<'a> {
 }
 
 impl<'a> Tiebreak<'a> {
-    fn new<P: AsRef<Player>>(living: &Vec<P>) -> &Player {
+    /// Return a winning player by comparing stocks and damage.
+    fn run<P: AsRef<Player>>(living: &Vec<P>) -> &Player {
         let living: Vec<_> = living.iter().map(|p| p.as_ref()).collect();
         let mut teams: Vec<Tiebreak> = Vec::new();
 
@@ -171,7 +172,7 @@ fn set_team_winners(team_color: &str, players: &Vec<Player>) {
 pub fn determine_winners(players: &Vec<Player>) {
     let living: Vec<_> = players.iter().filter(|p| p.stocks > 0).collect();
 
-    let winner = Tiebreak::new(&living);
+    let winner = Tiebreak::run(&living);
     winner.winner.set(true);
 
     if let Some(team) = &winner.team {
