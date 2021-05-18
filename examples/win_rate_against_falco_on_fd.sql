@@ -7,7 +7,7 @@ with my_games as (
     where op.id != me.id
     and me.game_id = op.game_id
     and me.game_id = games.id
-    and me.team is null
+    and not games.is_teams
     and op.character = 'FALCO'
     and games.stage = 'FINAL_DESTINATION'
     and me.tag = 'DJSwerve')
