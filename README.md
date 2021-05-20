@@ -68,8 +68,6 @@ $ sqlite3 slippi.db < examples/hours_played.sql
 * [File an issue!](https://github.com/mtimkovich/slippi-db/issues)
 * Twitter: [@DJSwerveGG][twitter]
 
-PRs welcome!
-
 [slippi]: https://github.com/project-slippi/slippi-wiki/blob/master/SPEC.md
 [peppi]: https://github.com/hohav/peppi
 [rust]: https://www.rust-lang.org/
