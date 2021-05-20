@@ -1,4 +1,7 @@
 # 🐸 Slippi DB
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Slippi DB ingests [Slippi replays][slippi] and puts the data into a SQLite database for easier parsing.
 
@@ -75,3 +78,23 @@ Max "DJSwerve" Timkovich
 [rust]: https://www.rust-lang.org/
 [ballchasing]: https://ballchasing.com
 [twitter]: https://twitter.com/DJSwerveGG
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://timkovi.ch"><img src="https://avatars.githubusercontent.com/u/651077?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Max Timkovich</b></sub></a><br /><a href="https://github.com/mtimkovich/slippi-db/commits?author=mtimkovich" title="Code">💻</a> <a href="https://github.com/mtimkovich/slippi-db/commits?author=mtimkovich" title="Documentation">📖</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
