@@ -70,9 +70,6 @@ $ sqlite3 slippi.db < examples/hours_played.sql
 
 PRs welcome!
 
-## Author
-Max "DJSwerve" Timkovich
-
 [slippi]: https://github.com/project-slippi/slippi-wiki/blob/master/SPEC.md
 [peppi]: https://github.com/hohav/peppi
 [rust]: https://www.rust-lang.org/
@@ -88,6 +85,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
+    <td align="center"><a href="https://timkovi.ch"><img src="https://avatars.githubusercontent.com/u/651077?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Max Timkovich</b></sub></a><br /><a href="https://github.com/mtimkovich/slippi-db/commits?author=mtimkovich" title="Code">💻</a> <a href="https://github.com/mtimkovich/slippi-db/commits?author=mtimkovich" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/FritzX6"><img src="https://avatars.githubusercontent.com/u/931724?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Fritz</b></sub></a><br /><a href="https://github.com/mtimkovich/slippi-db/commits?author=FritzX6" title="Code">💻</a></td>
   </tr>
 </table>

@@ -6,6 +6,16 @@
   "commit": false,
   "contributors": [
     {
+      "login": "mtimkovich",
+      "name": "Max Timkovich",
+      "avatar_url": "https://avatars.githubusercontent.com/u/651077?v=4",
+      "profile": "https://timkovi.ch",
+      "contributions": [
+        "code",
+        "doc"
+      ]
+    },
+    {
       "login": "FritzX6",
       "name": "Fritz",
       "avatar_url": "https://avatars.githubusercontent.com/u/931724?v=4",
