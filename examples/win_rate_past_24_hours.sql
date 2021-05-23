@@ -1,4 +1,4 @@
--- Calculate singles win rate over the past week.
+-- Calculate singles win rate over the past 24 hours.
 -- Replace 'DJSwerve' with your tag unless your tag is DJSwerve.
 
 with my_games as (
@@ -8,7 +8,9 @@ with my_games as (
     and me.game_id = op.game_id
     and games.id = me.game_id
     and not games.is_teams
-    and julianday() - julianday(games.start_time) < 7
+    and games.start_time between
+        datetime('now', 'localtime', '-24 hours')
+        and datetime('now', 'localtime')
     and me.tag = 'DJSwerve')
 
 select avg(winner) * 100 from my_games;
